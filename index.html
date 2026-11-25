@@ -1,0 +1,3058 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>AstraStudy 3.1 — Живой ИИ-репетитор (Испания · RU / ES)</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            bgBase: '#090B10',
+            bgCard: '#12151E',
+            bgElevated: '#181C28',
+            bgHover: '#1F2435',
+            borderSubtle: '#23283A',
+            indigoAccent: '#6366F1',
+            violetAccent: '#8B5CF6',
+            emeraldAccent: '#10B981',
+            amberAccent: '#F59E0B',
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- KaTeX for Math & Chemistry -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    html, body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #090B10;
+      color: #F1F5F9;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: none;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.28); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.55); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .katex-display {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 0.4rem 0;
+      margin: 0.4rem 0 !important;
+    }
+    .katex { font-size: 1.05em; }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    @keyframes pulseDot {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+    .typing-dot {
+      animation: pulseDot 1.3s infinite ease-in-out both;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.16s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.32s; }
+
+    /* 3D Flashcard Flip */
+    .flip-scene { perspective: 1200px; }
+    .flip-card {
+      position: relative;
+      width: 100%;
+      min-height: 250px;
+      transform-style: preserve-3d;
+      transition: transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+      cursor: pointer;
+    }
+    .flip-card.is-flipped { transform: rotateY(180deg); }
+    .flip-face {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-radius: 1.25rem;
+      overflow-y: auto;
+    }
+    .flip-back { transform: rotateY(180deg); }
+
+    .glass-dock {
+      background: rgba(18, 21, 30, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+  </style>
+</head>
+
+<body class="bg-bgBase text-slate-100 h-screen overflow-hidden flex flex-col md:flex-row selection:bg-indigo-500/30">
+
+  <!-- ==================== DESKTOP SIDEBAR ==================== -->
+  <aside class="hidden md:flex w-64 lg:w-68 shrink-0 bg-bgCard border-r border-borderSubtle flex-col h-full z-30">
+    <!-- Brand -->
+    <div class="p-4 flex items-center justify-between border-b border-borderSubtle">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <i data-lucide="sparkles" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <div class="font-bold text-sm tracking-tight text-white flex items-center gap-1.5">
+            AstraStudy <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">3.1</span>
+          </div>
+          <div class="text-[11px] text-slate-400">Живой ИИ-репетитор</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Spanish Grade Pill -->
+    <div class="px-3 pt-3">
+      <button onclick="switchSection('settings')" class="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-bgElevated hover:bg-bgHover border border-borderSubtle transition text-left group">
+        <div class="flex items-center gap-2">
+          <span class="text-base">🇪🇸</span>
+          <div>
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Класс в Испании</div>
+            <div id="sidebarGradeLabel" class="text-xs font-semibold text-slate-100">4º ESO</div>
+          </div>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 group-hover:text-slate-300 transition"></i>
+      </button>
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+      <button data-nav="learn" onclick="switchSection('learn')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition">
+        <i data-lucide="brain-circuit" class="w-4 h-4"></i>
+        <span>Живое обучение</span>
+      </button>
+      <button data-nav="collector" onclick="switchSection('collector')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition">
+        <i data-lucide="folder-kanban" class="w-4 h-4"></i>
+        <span>Накопитель и Архив</span>
+      </button>
+      <button data-nav="homework" onclick="switchSection('homework')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition">
+        <i data-lucide="notebook-pen" class="w-4 h-4"></i>
+        <span>Домашка (ДЗ)</span>
+      </button>
+      <button data-nav="tools" onclick="switchSection('tools')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition">
+        <i data-lucide="layers" class="w-4 h-4"></i>
+        <span>Инструменты</span>
+        <span id="sidebarCardsBadge" class="ml-auto text-[11px] px-1.5 py-0.5 rounded-md bg-bgElevated text-slate-400">0</span>
+      </button>
+      <button data-nav="settings" onclick="switchSection('settings')" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition">
+        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+        <span>Настройки</span>
+      </button>
+    </nav>
+
+    <!-- Recent Sessions Quick Switcher -->
+    <div class="p-3 border-t border-borderSubtle">
+      <div class="flex items-center justify-between mb-2 px-1">
+        <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Недавние темы</span>
+        <button onclick="openNewSessionSetup()" class="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-0.5">
+          <i data-lucide="plus" class="w-3 h-3"></i> Новая
+        </button>
+      </div>
+      <div id="sidebarRecentSessions" class="space-y-1 max-h-36 overflow-y-auto">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN CONTENT AREA ==================== -->
+  <main class="flex-1 flex flex-col h-full min-w-0 relative overflow-hidden pb-16 md:pb-0">
+
+    <!-- ==================== SECTION 1: LIVE LEARNING ==================== -->
+    <section id="sec-learn" class="section-view flex-1 flex flex-col h-full min-h-0">
+
+      <!-- 1A. SETUP VIEW (No active session or creating new) -->
+      <div id="learnSetupView" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <div class="max-w-3xl mx-auto space-y-6 animate-in">
+          <!-- Hero Header -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/25 text-indigo-300 text-xs font-medium mb-2">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Полная свобода + Умная память
+              </div>
+              <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">Живое обучение</h1>
+              <p class="text-sm text-slate-400 mt-1">Закинь фото конспектов или учебника — и общайся с репетитором свободно, без жёстких скриптов.</p>
+            </div>
+            <button onclick="startDemoSession()" class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 transition active:scale-[0.98]">
+              <i data-lucide="wand-2" class="w-4 h-4"></i>
+              <span>✨ Демо-сессия</span>
+            </button>
+          </div>
+
+          <!-- Setup Card -->
+          <div class="bg-bgCard border border-borderSubtle rounded-2xl p-5 sm:p-6 space-y-5 shadow-xl">
+            <!-- Row 1: Subject & Days -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Предмет</label>
+                <select id="setupSubject" class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 transition"></select>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="text-xs font-semibold text-slate-300">Сколько дней до контрольной</label>
+                  <span id="setupDaysBadge" class="text-xs font-bold text-indigo-400 bg-indigo-500/15 px-2 py-0.5 rounded-md">3 дня</span>
+                </div>
+                <input id="setupDays" type="range" min="1" max="14" value="3" oninput="updateDaysLabel(this.value)" class="w-full accent-indigo-500 h-2 bg-bgElevated rounded-lg cursor-pointer mt-2" />
+                <div class="flex justify-between text-[10px] text-slate-500 mt-1">
+                  <span>Завтра (1д)</span><span>Неделя (7д)</span><span>2 недели (14д)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2: Languages -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Язык объяснения (как тебе проще понять)</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button type="button" data-explang="RU" onclick="setSetupLang('explain','RU')" class="explang-btn py-2 px-3 rounded-xl border text-xs font-semibold transition">🇷🇺 Русский</button>
+                  <button type="button" data-explang="ES" onclick="setSetupLang('explain','ES')" class="explang-btn py-2 px-3 rounded-xl border text-xs font-semibold transition">🇪🇸 Español</button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Язык самой контрольной (термины и тесты)</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button type="button" data-examlang="RU" onclick="setSetupLang('exam','RU')" class="examlang-btn py-2 px-3 rounded-xl border text-xs font-semibold transition">🇷🇺 Русский</button>
+                  <button type="button" data-examlang="ES" onclick="setSetupLang('exam','ES')" class="examlang-btn py-2 px-3 rounded-xl border text-xs font-semibold transition">🇪🇸 Español</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 3: Unlimited Batch Photo Upload -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="text-xs font-semibold text-slate-300">Фото тетради, учебника или заданий (можно пачкой)</label>
+                <span id="setupPhotoCount" class="text-[11px] text-slate-400">0 фото</span>
+              </div>
+              <label class="flex flex-col items-center justify-center gap-2 p-5 rounded-2xl border-2 border-dashed border-borderSubtle hover:border-indigo-500/60 bg-bgElevated/50 hover:bg-bgElevated cursor-pointer transition text-center">
+                <div class="w-10 h-10 rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center">
+                  <i data-lucide="camera" class="w-5 h-5"></i>
+                </div>
+                <div class="text-sm font-medium text-slate-200">Нажми, чтобы добавить фото или сфоткать</div>
+                <div class="text-xs text-slate-500">Автосжатие до 1280px · Поддержка любого количества страниц</div>
+                <input id="setupPhotoInput" type="file" accept="image/*" multiple class="hidden" onchange="handleSetupPhotos(event)" />
+              </label>
+              <div id="setupPhotoPreview" class="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-3"></div>
+            </div>
+
+            <!-- Row 4: Optional Goal / Notes -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Тема, заметки или твоё пожелание (необязательно)</label>
+              <textarea id="setupNotes" rows="2" placeholder="Например: Неправильные глаголы, уравнения 2-й степени, или «я вообще не понимаю, откуда берутся моли, начнём с нуля»..." class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition resize-none"></textarea>
+            </div>
+
+            <!-- Submit -->
+            <button id="btnStartLiveSession" onclick="startLiveSession()" class="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 transition active:scale-[0.99]">
+              <i data-lucide="rocket" class="w-4 h-4"></i>
+              <span>Начать живое обучение</span>
+            </button>
+          </div>
+
+          <!-- Existing Sessions List (mobile & desktop) -->
+          <div id="setupSavedSessionsWrap" class="hidden space-y-2.5">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 px-1">Продолжить прошлую сессию</h2>
+            <div id="setupSavedSessionsList" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1B. ACTIVE WORKSPACE VIEW -->
+      <div id="learnWorkspaceView" class="hidden flex-1 flex flex-col h-full min-h-0 relative">
+        <!-- Top Compact Bar -->
+        <header class="shrink-0 px-3 sm:px-5 py-2.5 bg-bgCard/90 backdrop-blur border-b border-borderSubtle flex items-center justify-between gap-2 z-20">
+          <div class="flex items-center gap-2 min-w-0">
+            <button onclick="openNewSessionSetup()" title="Все темы / Новая тема" class="p-2 rounded-xl bg-bgElevated hover:bg-bgHover border border-borderSubtle text-slate-300 transition shrink-0">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </button>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span id="wsSubjectName" class="text-sm font-bold text-white truncate max-w-[160px] sm:max-w-[260px]">Предмет</span>
+                <span id="wsGradeBadge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-bgElevated border border-borderSubtle text-slate-300 shrink-0">🇪🇸 4º ESO</span>
+                <span id="wsLangBadge" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-indigo-500/15 text-indigo-300 border border-indigo-500/25 shrink-0">RU → ES</span>
+              </div>
+              <div id="wsSessionTitle" class="text-[11px] text-slate-400 truncate max-w-[200px] sm:max-w-md">Заголовок темы</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="generateCheatSheet()" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-semibold transition">
+              <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+              <span class="hidden sm:inline">Шпаргалка за 5 мин</span>
+              <span class="sm:hidden">5 мин</span>
+            </button>
+            <button onclick="toggleMemoryDrawer()" class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-bgElevated hover:bg-bgHover border border-borderSubtle text-slate-200 text-xs font-semibold transition">
+              <i data-lucide="target" class="w-3.5 h-3.5 text-indigo-400"></i>
+              <span class="hidden sm:inline">Цели и Память</span>
+              <span id="wsGoalsCountPill" class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300">0/0</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Feed + Collapsible Drawer Container -->
+        <div class="flex-1 flex min-h-0 relative overflow-hidden">
+          <!-- Scrollable Feed -->
+          <div id="liveFeedScroll" class="flex-1 overflow-y-auto px-3 sm:px-6 py-5 space-y-4">
+            <div id="liveFeedContainer" class="max-w-3xl mx-auto space-y-4 pb-6">
+              <!-- Dynamic Generative UI & Q&A Cards -->
+            </div>
+            <!-- Typing indicator -->
+            <div id="liveTypingIndicator" class="hidden max-w-3xl mx-auto pb-6">
+              <div class="inline-flex items-center gap-3 px-4 py-3 rounded-2xl bg-bgCard border border-borderSubtle text-xs text-slate-300">
+                <div class="flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 typing-dot"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 typing-dot"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 typing-dot"></span>
+                </div>
+                <span id="liveTypingText">Репетитор думает и подстраивает ответ...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Collapsible Goal Map & Learner Memory Drawer -->
+          <aside id="memoryDrawer" class="hidden w-80 max-w-[90vw] shrink-0 bg-bgCard border-l border-borderSubtle flex-col h-full absolute right-0 top-0 bottom-0 lg:static z-30 shadow-2xl lg:shadow-none">
+            <div class="p-3.5 border-b border-borderSubtle flex items-center justify-between">
+              <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-200">
+                <i data-lucide="compass" class="w-4 h-4 text-indigo-400"></i>
+                <span>Карта целей и Память</span>
+              </div>
+              <button onclick="toggleMemoryDrawer(false)" class="p-1.5 rounded-lg hover:bg-bgElevated text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-3.5 space-y-5">
+              <!-- Goal Map -->
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                    <i data-lucide="flag" class="w-3.5 h-3.5 text-emerald-400"></i> Гибкая карта целей
+                  </span>
+                  <span id="drawerDaysLeft" class="text-[11px] text-slate-400">3 дн.</span>
+                </div>
+                <div id="drawerGoalsList" class="space-y-1.5"></div>
+                <div class="mt-2 flex gap-1.5">
+                  <input id="newGoalInput" type="text" placeholder="Добавить свою цель..." class="flex-1 bg-bgElevated border border-borderSubtle rounded-lg px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500" onkeydown="if(event.key==='Enter') addCustomGoal()" />
+                  <button onclick="addCustomGoal()" class="px-2.5 py-1.5 rounded-lg bg-bgElevated hover:bg-bgHover border border-borderSubtle text-xs text-indigo-300 font-medium">+</button>
+                </div>
+              </div>
+
+              <!-- Learner Profile Memory -->
+              <div class="pt-4 border-t border-borderSubtle">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                    <i data-lucide="brain" class="w-3.5 h-3.5 text-violet-400"></i> Профиль ученика
+                  </span>
+                </div>
+                <p class="text-[11px] text-slate-400 mb-2.5">ИИ запоминает, как тебе легче понимать этот предмет. Можешь править вручную:</p>
+                <div id="drawerProfileList" class="space-y-1.5"></div>
+                <div class="mt-2 flex gap-1.5">
+                  <input id="newProfileNoteInput" type="text" placeholder="Напр: люблю аналогии из жизни..." class="flex-1 bg-bgElevated border border-borderSubtle rounded-lg px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-violet-500" onkeydown="if(event.key==='Enter') addProfileNoteFromDrawer()" />
+                  <button onclick="addProfileNoteFromDrawer()" class="px-2.5 py-1.5 rounded-lg bg-bgElevated hover:bg-bgHover border border-borderSubtle text-xs text-violet-300 font-medium">+</button>
+                </div>
+              </div>
+
+              <!-- Quick Session Actions -->
+              <div class="pt-4 border-t border-borderSubtle space-y-2">
+                <button onclick="openExamFromCurrentSession()" class="w-full py-2 px-3 rounded-xl bg-bgElevated hover:bg-bgHover border border-borderSubtle text-xs font-medium text-slate-200 flex items-center justify-center gap-2 transition">
+                  <i data-lucide="clipboard-check" class="w-3.5 h-3.5 text-emerald-400"></i> Пробная контрольная по теме
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <!-- PINNED BOTTOM: FREE-FORM TUTOR INPUT DOCK -->
+        <div class="shrink-0 glass-dock border-t border-borderSubtle px-3 sm:px-5 pt-2 pb-3 z-20">
+          <div class="max-w-3xl mx-auto space-y-2">
+            <!-- Subtle Optional Quick-Action Chips -->
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+              <button onclick="sendQuickChip('Не доходит, остановись и разбери это с другого угла, без сухих терминов')" class="shrink-0 px-2.5 py-1 rounded-full bg-bgElevated/80 hover:bg-bgHover border border-borderSubtle text-[11px] text-slate-300 hover:text-white transition">😵 Не доходит</button>
+              <button onclick="sendQuickChip('Слишком легко, пропусти базу и дай сразу сложную задачу на проверку')" class="shrink-0 px-2.5 py-1 rounded-full bg-bgElevated/80 hover:bg-bgHover border border-borderSubtle text-[11px] text-slate-300 hover:text-white transition">⚡ Слишком легко</button>
+              <button onclick="sendQuickChip('Дай мне сейчас практическую задачу по этой теме, я решу сам')" class="shrink-0 px-2.5 py-1 rounded-full bg-bgElevated/80 hover:bg-bgHover border border-borderSubtle text-[11px] text-slate-300 hover:text-white transition">📝 Дай задачу</button>
+              <button onclick="sendQuickChip('Всё понятно, давай двигаться дальше по карте целей')" class="shrink-0 px-2.5 py-1 rounded-full bg-bgElevated/80 hover:bg-bgHover border border-borderSubtle text-[11px] text-slate-300 hover:text-white transition">➡️ Дальше</button>
+            </div>
+
+            <!-- Mid-Conversation Photo Attachment Preview -->
+            <div id="dockPhotoPreviewWrap" class="hidden flex items-center gap-2 p-2 rounded-xl bg-bgElevated border border-borderSubtle">
+              <img id="dockPhotoThumb" src="" alt="Прикреплённое фото" class="w-11 h-11 rounded-lg object-cover border border-borderSubtle" />
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-medium text-slate-200 truncate">Фото прикреплено к вопросу</div>
+                <div class="text-[11px] text-slate-400">ИИ увидит его вместе с твоим текстом</div>
+              </div>
+              <button onclick="clearDockPhoto()" class="p-1.5 rounded-lg hover:bg-bgHover text-slate-400 hover:text-rose-400 transition">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- Main Free-Form Input Row -->
+            <div class="flex items-end gap-2 bg-bgElevated border border-borderSubtle focus-within:border-indigo-500/70 rounded-2xl p-1.5 pl-2 transition shadow-lg">
+              <!-- Paperclip / Camera Button -->
+              <label title="Прикрепить фото черновика или учебника" class="p-2.5 rounded-xl text-slate-400 hover:text-indigo-300 hover:bg-bgHover cursor-pointer transition shrink-0">
+                <i data-lucide="paperclip" class="w-4 h-4"></i>
+                <input id="dockPhotoInput" type="file" accept="image/*" class="hidden" onchange="handleDockPhoto(event)" />
+              </label>
+
+              <!-- Free-Form Textarea -->
+              <textarea id="dockTextarea" rows="1" placeholder="Спроси что угодно, попроси пример из жизни или измени формат..." class="flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-500 py-2 px-1 focus:outline-none resize-none max-h-36 leading-relaxed" oninput="autoResizeTextarea(this)" onkeydown="handleDockKeydown(event)"></textarea>
+
+              <!-- Send Button -->
+              <button id="dockSendBtn" onclick="sendFreeFormMessage()" class="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white transition shrink-0 shadow-md shadow-indigo-600/20 active:scale-95">
+                <i data-lucide="arrow-up" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION 2: DAILY COLLECTOR & ARCHIVE ==================== -->
+    <section id="sec-collector" class="section-view hidden flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+      <div class="max-w-4xl mx-auto space-y-6 animate-in">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 class="text-2xl font-bold text-white">Накопитель и Архив</h1>
+            <p class="text-sm text-slate-400 mt-0.5">Скидывай фото с уроков каждый день — перед контрольной запустишь обучение в один клик.</p>
+          </div>
+        </div>
+
+        <!-- Subject Horizontal Pills -->
+        <div id="collectorSubjectPills" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+
+        <!-- Daily Upload Box -->
+        <div class="bg-bgCard border border-borderSubtle rounded-2xl p-4 sm:p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-white flex items-center gap-2">
+              <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-400"></i>
+              Добавить сегодняшнее занятие (<span id="collectorCurrentSubName" class="text-indigo-300"></span>)
+            </h2>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label class="sm:col-span-2 flex items-center gap-3 p-3.5 rounded-xl border border-dashed border-borderSubtle hover:border-indigo-500/60 bg-bgElevated/50 cursor-pointer transition">
+              <div class="w-9 h-9 rounded-lg bg-indigo-500/15 text-indigo-400 flex items-center justify-center shrink-0">
+                <i data-lucide="image-plus" class="w-4 h-4"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="text-xs font-semibold text-slate-200">Выбрать фото конспекта / доски</div>
+                <div id="collectorUploadInfo" class="text-[11px] text-slate-500 truncate">Можно несколько фото сразу</div>
+              </div>
+              <input id="collectorPhotoInput" type="file" accept="image/*" multiple class="hidden" onchange="handleCollectorPhotos(event)" />
+            </label>
+            <button id="btnExtractNote" onclick="extractDailyNote()" class="py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-2 transition">
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+              <span>Распознать и сохранить</span>
+            </button>
+          </div>
+
+          <input id="collectorOptionalText" type="text" placeholder="Или просто напиши текстом, что прошли сегодня (необязательно, если есть фото)..." class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+        </div>
+
+        <!-- Tabs: Active vs Archive -->
+        <div class="flex items-center justify-between gap-3 border-b border-borderSubtle pb-2">
+          <div class="flex items-center gap-2">
+            <button id="colTabActive" onclick="setCollectorTab('active')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition">Активное (<span id="colActiveCount">0</span>)</button>
+            <button id="colTabArchive" onclick="setCollectorTab('archive')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition">Архив (<span id="colArchiveCount">0</span>)</button>
+          </div>
+
+          <div id="colActiveActions" class="flex items-center gap-2 flex-wrap">
+            <button onclick="launchLearningFromCollector()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition">
+              <i data-lucide="rocket" class="w-3.5 h-3.5"></i> Начать обучение по накопленному
+            </button>
+            <button onclick="archiveActiveNotes()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition">
+              <i data-lucide="archive" class="w-3.5 h-3.5"></i> Сдал! В архив
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Notes List -->
+        <div id="collectorActiveList" class="space-y-3"></div>
+
+        <!-- Archive List + Search -->
+        <div id="collectorArchiveWrap" class="hidden space-y-3">
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input id="archiveSearchInput" type="text" oninput="renderCollector()" placeholder="Поиск по архивным темам и конспектам..." class="w-full bg-bgCard border border-borderSubtle rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+          </div>
+          <div id="collectorArchiveList" class="space-y-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION 3: HOMEWORK (ДЗ) ==================== -->
+    <section id="sec-homework" class="section-view hidden flex-1 flex flex-col h-full min-h-0">
+      <!-- Header -->
+      <div class="shrink-0 px-4 sm:px-6 py-3.5 bg-bgCard border-b border-borderSubtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <h1 class="text-lg font-bold text-white">Домашка (ДЗ)</h1>
+          <select id="hwSubjectSelect" class="bg-bgElevated border border-borderSubtle rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"></select>
+        </div>
+        <div class="flex items-center gap-1.5 bg-bgElevated p-1 rounded-xl border border-borderSubtle self-start sm:self-auto">
+          <button id="hwModeSocratic" onclick="setHomeworkMode('socratic')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">🤝 Разбери со мной</button>
+          <button id="hwModeGrade" onclick="setHomeworkMode('grade')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition">✅ Проверь мою тетрадь</button>
+        </div>
+      </div>
+
+      <!-- Mode A: Socratic Free-Form Tutor -->
+      <div id="hwSocraticView" class="flex-1 flex flex-col min-h-0">
+        <div id="hwChatScroll" class="flex-1 overflow-y-auto px-4 sm:px-6 py-5">
+          <div id="hwChatList" class="max-w-3xl mx-auto space-y-4"></div>
+          <div id="hwTyping" class="hidden max-w-3xl mx-auto mt-3">
+            <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-bgCard border border-borderSubtle text-xs text-slate-400">
+              <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 typing-dot"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 typing-dot"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 typing-dot"></span>
+              <span>Думаю над подсказкой...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Homework Input Dock -->
+        <div class="shrink-0 glass-dock border-t border-borderSubtle px-3 sm:px-6 py-3">
+          <div class="max-w-3xl mx-auto space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex gap-1.5 overflow-x-auto no-scrollbar">
+                <button onclick="sendHomeworkMessage('Дай маленькую подсказку для следующего шага, не говори ответ')" class="shrink-0 px-2.5 py-1 rounded-full bg-bgElevated hover:bg-bgHover border border-borderSubtle text-[11px] text-slate-300">💡 Подсказка</button>
+                <button onclick="sendHomeworkMessage('Я застрял на этом шаге, покажи именно его разбор')" class="shrink-0 px-2.5 py-1 rounded-full bg-bgElevated hover:bg-bgHover border border-borderSubtle text-[11px] text-slate-300">🔍 Разбери этот шаг</button>
+              </div>
+              <button onclick="clearHomeworkChat()" class="text-[11px] text-slate-500 hover:text-slate-300 shrink-0">Очистить чат</button>
+            </div>
+            <div id="hwPhotoPreviewWrap" class="hidden flex items-center gap-2 p-2 rounded-xl bg-bgElevated border border-borderSubtle">
+              <img id="hwPhotoThumb" src="" class="w-10 h-10 rounded-lg object-cover" />
+              <span class="text-xs text-slate-300 flex-1">Фото задания прикреплено</span>
+              <button onclick="clearHwPhoto()" class="p-1 text-slate-400 hover:text-rose-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="flex items-end gap-2 bg-bgElevated border border-borderSubtle focus-within:border-indigo-500 rounded-2xl p-1.5 pl-2">
+              <label class="p-2.5 rounded-xl text-slate-400 hover:text-indigo-300 hover:bg-bgHover cursor-pointer transition shrink-0">
+                <i data-lucide="camera" class="w-4 h-4"></i>
+                <input id="hwPhotoInput" type="file" accept="image/*" class="hidden" onchange="handleHwPhoto(event)" />
+              </label>
+              <textarea id="hwTextarea" rows="1" placeholder="Скинь фото задания или напиши, на чём застрял..." class="flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-500 py-2 px-1 focus:outline-none resize-none max-h-32" oninput="autoResizeTextarea(this)" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); sendHomeworkMessage();}"></textarea>
+              <button onclick="sendHomeworkMessage()" class="p-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition shrink-0">
+                <i data-lucide="arrow-up" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode B: Grade My Notebook -->
+      <div id="hwGradeView" class="hidden flex-1 overflow-y-auto p-4 sm:p-6">
+        <div class="max-w-3xl mx-auto space-y-5 animate-in">
+          <div class="bg-bgCard border border-borderSubtle rounded-2xl p-5 space-y-4">
+            <h2 class="text-sm font-bold text-white">Проверка готовой домашней работы (шкала 0–10)</h2>
+            <p class="text-xs text-slate-400">Сфоткай свою тетрадь с выполненным ДЗ. ИИ проверит каждый пункт, найдёт ошибки и объяснит, как исправить.</p>
+            <label class="flex flex-col items-center justify-center gap-2 p-6 rounded-2xl border-2 border-dashed border-borderSubtle hover:border-emerald-500/50 bg-bgElevated/50 cursor-pointer transition">
+              <i data-lucide="file-check-2" class="w-7 h-7 text-emerald-400"></i>
+              <span id="hwGradeFileLabel" class="text-xs font-semibold text-slate-200">Выбрать фото тетради (можно несколько страниц)</span>
+              <input id="hwGradePhotoInput" type="file" accept="image/*" multiple class="hidden" onchange="handleHwGradePhotos(event)" />
+            </label>
+            <div id="hwGradePhotoThumbs" class="flex flex-wrap gap-2"></div>
+            <input id="hwGradeContext" type="text" placeholder="Комментарий (необязательно): например, проверь упражнения 3 и 4 на испанском" class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3.5 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+            <button id="btnGradeHomework" onclick="gradeHomeworkNotebook()" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold flex items-center justify-center gap-2 transition">
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i> Проверить мою тетрадь
+            </button>
+          </div>
+
+          <div id="hwGradeResultContainer"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION 4: TOOLS (FLASHCARDS + EXAM SIMULATOR) ==================== -->
+    <section id="sec-tools" class="section-view hidden flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+      <div class="max-w-4xl mx-auto space-y-6 animate-in">
+        <!-- Tools Sub-Tabs -->
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div class="flex items-center gap-1.5 bg-bgCard p-1 rounded-xl border border-borderSubtle">
+            <button id="toolTabCards" onclick="setToolsTab('cards')" class="px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+              <i data-lucide="layers" class="w-3.5 h-3.5"></i> 3D Карточки
+            </button>
+            <button id="toolTabExam" onclick="setToolsTab('exam')" class="px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+              <i data-lucide="timer" class="w-3.5 h-3.5"></i> Симулятор контрольной
+            </button>
+          </div>
+        </div>
+
+        <!-- 4A. 3D FLASHCARDS -->
+        <div id="toolsCardsView" class="space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <select id="cardsSubjectFilter" onchange="initCardQueue()" class="bg-bgCard border border-borderSubtle rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"></select>
+              <span id="cardsQueueCounter" class="text-xs text-slate-400">0 карточек</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="openAddCardModal()" class="px-3 py-2 rounded-xl bg-bgCard hover:bg-bgHover border border-borderSubtle text-xs font-semibold text-slate-200 transition">+ Своя карточка</button>
+              <button id="btnGenCards" onclick="generateCardsFromActiveSession()" class="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white flex items-center gap-1.5 transition">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Сгенерировать из темы
+              </button>
+            </div>
+          </div>
+
+          <!-- Active 3D Card Stage -->
+          <div id="flashcardStage" class="max-w-xl mx-auto"></div>
+
+          <!-- Keyboard Shortcuts Hint -->
+          <div class="text-center text-[11px] text-slate-500 hidden sm:block">
+            Клавиши: <kbd class="px-1.5 py-0.5 rounded bg-bgCard border border-borderSubtle text-slate-300">Space</kbd> перевернуть ·
+            <kbd class="px-1.5 py-0.5 rounded bg-bgCard border border-borderSubtle text-slate-300">1</kbd> не помню ·
+            <kbd class="px-1.5 py-0.5 rounded bg-bgCard border border-borderSubtle text-slate-300">2</kbd> сложно ·
+            <kbd class="px-1.5 py-0.5 rounded bg-bgCard border border-borderSubtle text-slate-300">3</kbd> запомнил
+          </div>
+        </div>
+
+        <!-- 4B. EXAM SIMULATOR -->
+        <div id="toolsExamView" class="hidden space-y-5">
+          <!-- Exam Setup -->
+          <div id="examSetupCard" class="bg-bgCard border border-borderSubtle rounded-2xl p-5 space-y-4">
+            <h2 class="text-base font-bold text-white">Симулятор контрольной с таймером</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Источник материала</label>
+                <select id="examSourceSelect" onchange="toggleExamCustomPhotos()" class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3 py-2 text-xs text-slate-100">
+                  <option value="session">Текущая тема обучения</option>
+                  <option value="collector">Накопитель (по предмету)</option>
+                  <option value="photos">Свои фото / текст</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Предмет</label>
+                <select id="examSubjectSelect" class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3 py-2 text-xs text-slate-100"></select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Вопросов и время</label>
+                <select id="examCountSelect" class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3 py-2 text-xs text-slate-100">
+                  <option value="5">5 вопросов · 15 мин</option>
+                  <option value="8">8 вопросов · 25 мин</option>
+                  <option value="12">12 вопросов · 40 мин</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">Язык контрольной</label>
+                <select id="examLangSelect" class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3 py-2 text-xs text-slate-100">
+                  <option value="ES">🇪🇸 Español</option>
+                  <option value="RU">🇷🇺 Русский</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="examCustomWrap" class="hidden space-y-2 pt-2">
+              <label class="flex items-center gap-2 p-3 rounded-xl border border-dashed border-borderSubtle bg-bgElevated/50 cursor-pointer text-xs text-slate-300">
+                <i data-lucide="camera" class="w-4 h-4 text-indigo-400"></i>
+                <span id="examPhotoLabel">Прикрепить фото для контрольной</span>
+                <input id="examPhotoInput" type="file" accept="image/*" multiple class="hidden" onchange="handleExamSourcePhotos(event)" />
+              </label>
+              <input id="examCustomTopic" type="text" placeholder="Или напиши тему контрольной текстом..." class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3 py-2 text-xs text-slate-100" />
+            </div>
+
+            <button id="btnStartExam" onclick="startExamSimulator()" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 transition">
+              <i data-lucide="play" class="w-4 h-4"></i> Сгенерировать вариант и запустить таймер
+            </button>
+          </div>
+
+          <!-- Active Exam Runner -->
+          <div id="examRunnerWrap" class="hidden space-y-4"></div>
+
+          <!-- Exam Result -->
+          <div id="examResultWrap" class="hidden space-y-4"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION 5: SETTINGS ==================== -->
+    <section id="sec-settings" class="section-view hidden flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+      <div class="max-w-3xl mx-auto space-y-6 animate-in">
+        <div>
+          <h1 class="text-2xl font-bold text-white">Настройки и Профиль</h1>
+          <p class="text-sm text-slate-400 mt-0.5">Настрой свой класс в Испании, предметы, память репетитора и ключ для автономной работы.</p>
+        </div>
+
+        <!-- Spanish Grade -->
+        <div class="bg-bgCard border border-borderSubtle rounded-2xl p-5 space-y-3">
+          <h2 class="text-sm font-bold text-white flex items-center gap-2">🇪🇸 Твой класс в Испании</h2>
+          <p class="text-xs text-slate-400">Уровень программы, терминология и сложность задач автоматически подстраиваются под выбранный класс.</p>
+          <div id="gradeButtonsGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+        </div>
+
+        <!-- Subjects Management -->
+        <div class="bg-bgCard border border-borderSubtle rounded-2xl p-5 space-y-3">
+          <h2 class="text-sm font-bold text-white">Предметы (показать / скрыть)</h2>
+          <div id="settingsSubjectsGrid" class="flex flex-wrap gap-2"></div>
+          <div class="flex gap-2 pt-2">
+            <input id="customSubjectInput" type="text" placeholder="Добавить свой предмет (напр. Música, Dibujo)..." class="flex-1 bg-bgElevated border border-borderSubtle rounded-xl px-3.5 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500" onkeydown="if(event.key==='Enter') addCustomSubject()" />
+            <button onclick="addCustomSubject()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition">Добавить</button>
+          </div>
+        </div>
+
+        <!-- AI Learner Profile Editor -->
+        <div class="bg-bgCard border border-borderSubtle rounded-2xl p-5 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="brain" class="w-4 h-4 text-violet-400"></i> Память репетитора (Профиль ученика)
+            </h2>
+            <select id="settingsProfileSubSelect" onchange="renderSettingsProfile()" class="bg-bgElevated border border-borderSubtle rounded-lg px-2.5 py-1.5 text-xs text-slate-200"></select>
+          </div>
+          <p class="text-xs text-slate-400">Здесь хранятся наблюдения ИИ о том, как ты лучше понимаешь выбранный предмет.</p>
+          <div id="settingsProfileList" class="space-y-2"></div>
+          <div class="flex gap-2">
+            <input id="settingsProfileAddInput" type="text" placeholder="Добавить заметку для ИИ..." class="flex-1 bg-bgElevated border border-borderSubtle rounded-xl px-3 py-2 text-xs text-slate-100" onkeydown="if(event.key==='Enter') addProfileNoteFromSettings()" />
+            <button onclick="addProfileNoteFromSettings()" class="px-3.5 py-2 rounded-xl bg-bgElevated hover:bg-bgHover border border-borderSubtle text-xs font-semibold text-violet-300">Добавить</button>
+          </div>
+        </div>
+
+        <!-- Gemini API Key & Model -->
+        <div class="bg-bgCard border border-borderSubtle rounded-2xl p-5 space-y-3">
+          <h2 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="key-round" class="w-4 h-4 text-amber-400"></i> Gemini API (для работы локально)
+          </h2>
+          <p class="text-xs text-slate-400">В окне Preview ключ подставляется автоматически. Если скачаешь этот HTML-файл на ПК или телефон, вставь сюда бесплатный ключ из Google AI Studio.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input id="settingsApiKey" type="password" placeholder="AIzaSy... (оставь пустым для Preview)" class="sm:col-span-2 bg-bgElevated border border-borderSubtle rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500" />
+            <select id="settingsModelSelect" class="bg-bgElevated border border-borderSubtle rounded-xl px-3 py-2.5 text-xs text-slate-100">
+              <option value="auto">Авто (рекомендуется)</option>
+              <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+              <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
+            </select>
+          </div>
+          <button onclick="saveApiSettings()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition">Сохранить ключ и модель</button>
+        </div>
+
+        <!-- Backup & Reset -->
+        <div class="bg-bgCard border border-borderSubtle rounded-2xl p-5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="text-sm font-bold text-white">Резервная копия данных</div>
+            <div class="text-xs text-slate-400">Экспортируй все конспекты, карточки и профили в JSON.</div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="exportBackup()" class="px-3.5 py-2 rounded-xl bg-bgElevated hover:bg-bgHover border border-borderSubtle text-xs font-semibold text-slate-200 transition">Экспорт JSON</button>
+            <label class="px-3.5 py-2 rounded-xl bg-bgElevated hover:bg-bgHover border border-borderSubtle text-xs font-semibold text-slate-200 cursor-pointer transition">
+              Импорт JSON
+              <input type="file" accept=".json" class="hidden" onchange="importBackup(event)" />
+            </label>
+            <button onclick="confirmClearAllData()" class="px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-xs font-semibold text-rose-300 transition">Сбросить всё</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MOBILE BOTTOM NAVIGATION BAR ==================== -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-bgCard/95 backdrop-blur border-t border-borderSubtle flex items-center justify-around px-1 z-40">
+    <button data-mnav="learn" onclick="switchSection('learn')" class="mnav-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-2.5 rounded-xl text-[10px] font-medium">
+      <i data-lucide="brain-circuit" class="w-5 h-5"></i><span>Обучение</span>
+    </button>
+    <button data-mnav="collector" onclick="switchSection('collector')" class="mnav-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-2.5 rounded-xl text-[10px] font-medium">
+      <i data-lucide="folder-kanban" class="w-5 h-5"></i><span>Накопитель</span>
+    </button>
+    <button data-mnav="homework" onclick="switchSection('homework')" class="mnav-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-2.5 rounded-xl text-[10px] font-medium">
+      <i data-lucide="notebook-pen" class="w-5 h-5"></i><span>Домашка</span>
+    </button>
+    <button data-mnav="tools" onclick="switchSection('tools')" class="mnav-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-2.5 rounded-xl text-[10px] font-medium">
+      <i data-lucide="layers" class="w-5 h-5"></i><span>Инструм.</span>
+    </button>
+    <button data-mnav="settings" onclick="switchSection('settings')" class="mnav-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-2.5 rounded-xl text-[10px] font-medium">
+      <i data-lucide="sliders-horizontal" class="w-5 h-5"></i><span>Профиль</span>
+    </button>
+  </nav>
+
+  <!-- ==================== UNIVERSAL MODAL ==================== -->
+  <div id="appModalBackdrop" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4" onclick="if(event.target===this) closeModal()">
+    <div class="bg-bgCard border border-borderSubtle rounded-2xl w-full max-w-2xl max-h-[88vh] flex flex-col shadow-2xl animate-in overflow-hidden">
+      <div class="px-5 py-3.5 border-b border-borderSubtle flex items-center justify-between">
+        <h3 id="appModalTitle" class="text-sm font-bold text-white">Заголовок</h3>
+        <button onclick="closeModal()" class="p-1.5 rounded-lg hover:bg-bgElevated text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div id="appModalBody" class="p-5 overflow-y-auto text-sm text-slate-200 space-y-4"></div>
+    </div>
+  </div>
+
+  <!-- ==================== TOAST NOTIFICATION ==================== -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-[60] space-y-2 pointer-events-none max-w-xs w-full"></div>
+
+  <script>
+    /* ==========================================================================
+       1. CONSTANTS, DEFAULT DATA & STATE MANAGEMENT
+       ========================================================================== */
+    const STORAGE_KEY = 'astrastudy_v31_state';
+
+    const SPANISH_GRADES = ['1º ESO', '2º ESO', '3º ESO', '4º ESO', '1º Bachillerato', '2º Bachillerato'];
+
+    const DEFAULT_SUBJECTS = [
+      { id: 'mat', name: 'Matemáticas', icon: '📐' },
+      { id: 'fyq', name: 'Física y Química', icon: '⚗️' },
+      { id: 'bio', name: 'Biología y Geología', icon: '🧬' },
+      { id: 'geo', name: 'Geografía e Historia', icon: '🌍' },
+      { id: 'len', name: 'Lengua Castellana', icon: '📖' },
+      { id: 'val', name: 'Valenciano / Catalán', icon: '🏛️' },
+      { id: 'ing', name: 'Inglés', icon: '🇬🇧' },
+      { id: 'lat', name: 'Latín', icon: '🏺' },
+      { id: 'tec', name: 'Tecnología', icon: '⚙️' },
+      { id: 'eco', name: 'Economía / Filosofía', icon: '💡' }
+    ];
+
+    function getDefaultState() {
+      return {
+        settings: {
+          grade: '4º ESO',
+          apiKey: '',
+          model: 'auto',
+          hiddenSubjects: [],
+          customSubjects: []
+        },
+        learnerProfiles: {
+          fyq: ['Понимает быстрее через аналогии из жизни, а не сухие определения']
+        },
+        sessions: [],
+        activeSessionId: null,
+        collector: {},
+        homework: {
+          mode: 'socratic',
+          subjectId: 'mat',
+          messages: [],
+          gradeResult: null
+        },
+        flashcards: [],
+        activeSection: 'learn',
+        collectorSubjectId: 'mat',
+        collectorTab: 'active',
+        toolsTab: 'cards'
+      };
+    }
+
+    let state = loadState();
+
+    // Ephemeral runtime buffers (not persisted in localStorage due to base64 size)
+    let setupExplainLang = 'RU';
+    let setupExamLang = 'ES';
+    let setupPhotos = []; // [{dataUrl, base64, mimeType}]
+    let dockPhoto = null; // {dataUrl, base64, mimeType}
+    let collectorPhotos = [];
+    let hwChatPhoto = null;
+    let hwGradePhotos = [];
+    let examSourcePhotos = [];
+    let activeExam = null;
+    let examTimerInterval = null;
+    let cardQueue = [];
+    let currentCardFlipped = false;
+    let isBusy = false;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return getDefaultState();
+        const parsed = JSON.parse(raw);
+        return {
+          ...getDefaultState(),
+          ...parsed,
+          settings: { ...getDefaultState().settings, ...(parsed.settings || {}) },
+          homework: { ...getDefaultState().homework, ...(parsed.homework || {}) }
+        };
+      } catch (e) {
+        return getDefaultState();
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        showToast('Память браузера почти заполнена — экспортируй бэкап в Настройках.', 'warn');
+      }
+      updateBadges();
+    }
+
+    function getAllSubjects() {
+      return [...DEFAULT_SUBJECTS, ...(state.settings.customSubjects || [])];
+    }
+
+    function getVisibleSubjects() {
+      const hidden = new Set(state.settings.hiddenSubjects || []);
+      const visible = getAllSubjects().filter(s => !hidden.has(s.id));
+      return visible.length ? visible : [DEFAULT_SUBJECTS[0]];
+    }
+
+    function getSubjectById(id) {
+      return getAllSubjects().find(s => s.id === id) || DEFAULT_SUBJECTS[0];
+    }
+
+    function uid(prefix = 'id') {
+      return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    }
+
+    /* ==========================================================================
+       2. UTILITIES: ESCAPE HTML, MATH RENDERING, IMAGE COMPRESSION, TOAST, MODAL
+       ========================================================================== */
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Format simple markdown bold/italic/newlines safely while preserving LaTeX $...$
+    function formatRichText(text) {
+      if (!text) return '';
+      let html = escapeHtml(text);
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
+      html = html.replace(/\n/g, '<br>');
+      return html;
+    }
+
+    function renderMathIn(el) {
+      if (!el || typeof renderMathInElement !== 'function') return;
+      try {
+        renderMathInElement(el, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+          ],
+          throwOnError: false
+        });
+      } catch (e) { /* ignore KaTeX errors */ }
+    }
+
+    function compressImageFile(file, maxDim = 1280, quality = 0.78) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Ошибка чтения файла'));
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onerror = () => reject(new Error('Не удалось декодировать изображение'));
+          img.onload = () => {
+            let { width, height } = img;
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+            const base64 = dataUrl.split(',')[1];
+            resolve({ dataUrl, base64, mimeType: 'image/jpeg' });
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const colors = {
+        info: 'bg-bgElevated border-indigo-500/40 text-slate-100',
+        success: 'bg-emerald-950/90 border-emerald-500/40 text-emerald-100',
+        warn: 'bg-amber-950/90 border-amber-500/40 text-amber-100',
+        error: 'bg-rose-950/90 border-rose-500/40 text-rose-100'
+      };
+      const el = document.createElement('div');
+      el.className = `pointer-events-auto px-3.5 py-2.5 rounded-xl border text-xs font-medium shadow-xl animate-in ${colors[type] || colors.info}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.25s';
+        setTimeout(() => el.remove(), 260);
+      }, 3400);
+    }
+
+    function openModal(title, htmlContent) {
+      document.getElementById('appModalTitle').textContent = title;
+      const body = document.getElementById('appModalBody');
+      body.innerHTML = htmlContent;
+      document.getElementById('appModalBackdrop').classList.remove('hidden');
+      lucide.createIcons();
+      renderMathIn(body);
+    }
+
+    function closeModal() {
+      document.getElementById('appModalBackdrop').classList.add('hidden');
+    }
+
+    function autoResizeTextarea(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 144) + 'px';
+    }
+
+    /* ==========================================================================
+       3. GEMINI API CLIENT (WITH EXPONENTIAL BACKOFF & SAFE JSON PARSING)
+       ========================================================================== */
+    function resolveGeminiEndpoint() {
+      const userKey = (state.settings.apiKey || '').trim();
+      let model = state.settings.model || 'auto';
+      if (model === 'auto') {
+        model = userKey ? 'gemini-2.5-flash' : 'gemini-3-flash-preview';
+      }
+      const apiKey = userKey || '';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      return { url, model };
+    }
+
+    async function callGemini({ systemInstruction, contents, expectJson = true }) {
+      const { url } = resolveGeminiEndpoint();
+      const payload = {
+        contents,
+        generationConfig: {
+          temperature: 0.55
+        }
+      };
+      if (systemInstruction) {
+        payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+      }
+      if (expectJson) {
+        payload.generationConfig.responseMimeType = 'application/json';
+      }
+
+      const delays = [1000, 2000, 4000];
+      let lastError = null;
+
+      for (let attempt = 0; attempt <= delays.length; attempt++) {
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) {
+            const errText = await res.text().catch(() => '');
+            if ((res.status === 429 || res.status >= 500) && attempt < delays.length) {
+              await new Promise(r => setTimeout(r, delays[attempt]));
+              continue;
+            }
+            throw new Error(`API ${res.status}: ${errText.slice(0, 160)}`);
+          }
+
+          const data = await res.json();
+          const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+          if (!text) throw new Error('Пустой ответ от Gemini');
+
+          if (!expectJson) return text;
+          return extractJsonSafe(text);
+        } catch (err) {
+          lastError = err;
+          if (attempt < delays.length) {
+            await new Promise(r => setTimeout(r, delays[attempt]));
+            continue;
+          }
+        }
+      }
+      throw lastError || new Error('Не удалось связаться с Gemini API');
+    }
+
+    function extractJsonSafe(rawText) {
+      if (!rawText) return { _fallbackText: '' };
+      let cleaned = rawText.trim();
+      // Remove markdown code fences if present
+      cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+      try {
+        return JSON.parse(cleaned);
+      } catch (_) {
+        // Try extracting outermost JSON object
+        const firstBrace = cleaned.indexOf('{');
+        const lastBrace = cleaned.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace > firstBrace) {
+          try {
+            return JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
+          } catch (__) { /* fall through */ }
+        }
+        return { _fallbackText: rawText };
+      }
+    }
+
+    /* ==========================================================================
+       4. NAVIGATION & INITIALIZATION
+       ========================================================================== */
+    function switchSection(sec) {
+      state.activeSection = sec;
+      saveState();
+
+      document.querySelectorAll('.section-view').forEach(el => el.classList.add('hidden'));
+      const target = document.getElementById(`sec-${sec}`);
+      if (target) target.classList.remove('hidden');
+
+      // Desktop nav styles
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        const active = btn.dataset.nav === sec;
+        btn.className = `nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
+          active ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/25' : 'text-slate-400 hover:text-slate-100 hover:bg-bgElevated border border-transparent'
+        }`;
+      });
+
+      // Mobile nav styles
+      document.querySelectorAll('.mnav-btn').forEach(btn => {
+        const active = btn.dataset.mnav === sec;
+        btn.className = `mnav-btn flex flex-col items-center justify-center gap-0.5 py-1.5 px-2.5 rounded-xl text-[10px] font-medium transition ${
+          active ? 'text-indigo-400' : 'text-slate-500'
+        }`;
+      });
+
+      if (sec === 'learn') renderLearnSection();
+      if (sec === 'collector') renderCollector();
+      if (sec === 'homework') renderHomeworkSection();
+      if (sec === 'tools') renderToolsSection();
+      if (sec === 'settings') renderSettingsSection();
+
+      lucide.createIcons();
+    }
+
+    function updateBadges() {
+      document.getElementById('sidebarGradeLabel').textContent = state.settings.grade;
+      document.getElementById('sidebarCardsBadge').textContent = state.flashcards.length;
+      renderSidebarRecentSessions();
+    }
+
+    function populateSubjectDropdowns() {
+      const subs = getVisibleSubjects();
+      const optionsHtml = subs.map(s => `<option value="${s.id}">${s.icon} ${escapeHtml(s.name)}</option>`).join('');
+      ['setupSubject', 'hwSubjectSelect', 'examSubjectSelect', 'settingsProfileSubSelect'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const prev = el.value;
+        el.innerHTML = optionsHtml;
+        if (subs.some(s => s.id === prev)) el.value = prev;
+      });
+
+      const cardFilter = document.getElementById('cardsSubjectFilter');
+      if (cardFilter) {
+        const prev = cardFilter.value;
+        cardFilter.innerHTML = `<option value="all">Все предметы (${state.flashcards.length})</option>` +
+          subs.map(s => {
+            const cnt = state.flashcards.filter(c => c.subjectId === s.id).length;
+            return `<option value="${s.id}">${s.icon} ${escapeHtml(s.name)} (${cnt})</option>`;
+          }).join('');
+        if (prev) cardFilter.value = prev;
+      }
+    }
+
+    function renderSidebarRecentSessions() {
+      const wrap = document.getElementById('sidebarRecentSessions');
+      if (!wrap) return;
+      if (!state.sessions.length) {
+        wrap.innerHTML = `<div class="text-[11px] text-slate-500 px-2 py-1">Пока нет активных тем</div>`;
+        return;
+      }
+      wrap.innerHTML = state.sessions.slice(0, 6).map(s => {
+        const sub = getSubjectById(s.subjectId);
+        const isCurrent = s.id === state.activeSessionId && state.activeSection === 'learn';
+        return `
+          <button onclick="openSessionById('${s.id}')" class="w-full text-left px-2.5 py-2 rounded-lg text-xs transition flex items-center gap-2 ${
+            isCurrent ? 'bg-indigo-500/15 text-indigo-200 border border-indigo-500/25' : 'text-slate-400 hover:bg-bgElevated hover:text-slate-200'
+          }">
+            <span>${sub.icon}</span>
+            <span class="truncate flex-1">${escapeHtml(s.title || sub.name)}</span>
+          </button>`;
+      }).join('');
+    }
+
+    /* ==========================================================================
+       5. SECTION 1: LIVE LEARNING (GENERATIVE UI + FULL CONVERSATIONAL FREEDOM)
+       ========================================================================== */
+    function updateDaysLabel(val) {
+      const n = parseInt(val, 10);
+      const word = n === 1 ? 'день' : (n >= 2 && n <= 4 ? 'дня' : 'дней');
+      document.getElementById('setupDaysBadge').textContent = `${n} ${word}`;
+    }
+
+    function setSetupLang(which, lang) {
+      if (which === 'explain') setupExplainLang = lang;
+      if (which === 'exam') setupExamLang = lang;
+      document.querySelectorAll('.explang-btn').forEach(b => {
+        const active = b.dataset.explang === setupExplainLang;
+        b.className = `explang-btn py-2 px-3 rounded-xl border text-xs font-semibold transition ${
+          active ? 'bg-indigo-500/20 border-indigo-500 text-indigo-200' : 'bg-bgElevated border-borderSubtle text-slate-400 hover:text-slate-200'
+        }`;
+      });
+      document.querySelectorAll('.examlang-btn').forEach(b => {
+        const active = b.dataset.examlang === setupExamLang;
+        b.className = `examlang-btn py-2 px-3 rounded-xl border text-xs font-semibold transition ${
+          active ? 'bg-emerald-500/20 border-emerald-500 text-emerald-200' : 'bg-bgElevated border-borderSubtle text-slate-400 hover:text-slate-200'
+        }`;
+      });
+    }
+
+    async function handleSetupPhotos(ev) {
+      const files = Array.from(ev.target.files || []);
+      if (!files.length) return;
+      showToast(`Сжимаю ${files.length} фото...`, 'info');
+      for (const f of files) {
+        try {
+          const compressed = await compressImageFile(f);
+          setupPhotos.push(compressed);
+        } catch (e) {
+          showToast('Не удалось обработать одно из фото', 'warn');
+        }
+      }
+      ev.target.value = '';
+      renderSetupPhotos();
+    }
+
+    function renderSetupPhotos() {
+      document.getElementById('setupPhotoCount').textContent = `${setupPhotos.length} фото`;
+      const grid = document.getElementById('setupPhotoPreview');
+      grid.innerHTML = setupPhotos.map((p, idx) => `
+        <div class="relative group rounded-xl overflow-hidden border border-borderSubtle aspect-square bg-bgElevated">
+          <img src="${p.dataUrl}" class="w-full h-full object-cover" />
+          <button onclick="removeSetupPhoto(${idx})" class="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/75 text-white flex items-center justify-center opacity-90 hover:bg-rose-600 transition">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>`).join('');
+      lucide.createIcons();
+    }
+
+    function removeSetupPhoto(idx) {
+      setupPhotos.splice(idx, 1);
+      renderSetupPhotos();
+    }
+
+    function openNewSessionSetup() {
+      state.activeSessionId = null;
+      saveState();
+      switchSection('learn');
+    }
+
+    function openSessionById(id) {
+      state.activeSessionId = id;
+      saveState();
+      switchSection('learn');
+    }
+
+    function getActiveSession() {
+      return state.sessions.find(s => s.id === state.activeSessionId) || null;
+    }
+
+    function renderLearnSection() {
+      populateSubjectDropdowns();
+      setSetupLang('explain', setupExplainLang);
+      setSetupLang('exam', setupExamLang);
+
+      const session = getActiveSession();
+      const setupView = document.getElementById('learnSetupView');
+      const wsView = document.getElementById('learnWorkspaceView');
+
+      if (!session) {
+        setupView.classList.remove('hidden');
+        wsView.classList.add('hidden');
+        renderSavedSessionsInSetup();
+        return;
+      }
+
+      setupView.classList.add('hidden');
+      wsView.classList.remove('hidden');
+
+      const sub = getSubjectById(session.subjectId);
+      document.getElementById('wsSubjectName').textContent = `${sub.icon} ${sub.name}`;
+      document.getElementById('wsGradeBadge').textContent = `🇪🇸 ${state.settings.grade}`;
+      document.getElementById('wsLangBadge').textContent = `${session.explainLang} → ${session.examLang}`;
+      document.getElementById('wsSessionTitle').textContent = session.title;
+      document.getElementById('drawerDaysLeft').textContent = `До контрольной: ${session.daysLeft} дн.`;
+
+      renderGoalsAndMemoryDrawer(session);
+      renderLiveFeed(session);
+      lucide.createIcons();
+    }
+
+    function renderSavedSessionsInSetup() {
+      const wrap = document.getElementById('setupSavedSessionsWrap');
+      const list = document.getElementById('setupSavedSessionsList');
+      if (!state.sessions.length) {
+        wrap.classList.add('hidden');
+        return;
+      }
+      wrap.classList.remove('hidden');
+      list.innerHTML = state.sessions.map(s => {
+        const sub = getSubjectById(s.subjectId);
+        const done = (s.goals || []).filter(g => g.status === 'done').length;
+        const total = (s.goals || []).length;
+        return `
+          <div class="bg-bgCard border border-borderSubtle hover:border-indigo-500/40 rounded-xl p-3.5 flex items-center justify-between gap-3 transition">
+            <button onclick="openSessionById('${s.id}')" class="text-left min-w-0 flex-1">
+              <div class="text-xs font-semibold text-white truncate">${sub.icon} ${escapeHtml(s.title)}</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">${escapeHtml(sub.name)} · ${s.explainLang}→${s.examLang} · Цели: ${done}/${total}</div>
+            </button>
+            <button onclick="deleteSession('${s.id}')" title="Удалить сессию" class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-bgElevated">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>`;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function deleteSession(id) {
+      state.sessions = state.sessions.filter(s => s.id !== id);
+      if (state.activeSessionId === id) state.activeSessionId = null;
+      saveState();
+      renderLearnSection();
+    }
+
+    function buildLiveTutorSystemPrompt(session) {
+      const sub = getSubjectById(session.subjectId);
+      const profile = state.learnerProfiles[session.subjectId] || [];
+      const goalsText = (session.goals || []).map(g => `- [${g.status}] (id:${g.id}, День ${g.day || 1}): ${g.title}`).join('\n');
+
+      return `Ты — AstraStudy 3.1, живой адаптивный ИИ-репетитор для школьника в Испании.
+Класс ученика: ${state.settings.grade}.
+Предмет: ${sub.name}.
+Язык объяснений (как ты общаешься): ${session.explainLang === 'ES' ? 'Испанский' : 'Русский'}.
+Язык контрольной (термины, формулировки задач и вопросы проверки): ${session.examLang === 'ES' ? 'Испанский' : 'Русский'}.
+Дней до контрольной: ${session.daysLeft}.
+
+ПРОФИЛЬ УЧЕНИКА ПО ЭТОМУ ПРЕДМЕТУ (память о том, как он лучше учится):
+${profile.length ? profile.map(p => `- ${p}`).join('\n') : '- Пока нет наблюдений, изучай стиль ученика.'}
+
+ТЕКУЩАЯ ГИБКАЯ КАРТА ЦЕЛЕЙ:
+${goalsText || '- Ещё не сформирована (сформируй 3-6 коротких целей по материалу).'}
+
+ИСХОДНЫЙ КОНТЕКСТ ТЕМЫ:
+${session.sourceNotes || 'Опирайся на загруженные фото и сообщения ученика.'}
+
+ГЛАВНЫЙ ПРИНЦИП (ПОЛНАЯ СВОБОДА + ВИЗУАЛЬНАЯ СТРУКТУРА):
+1. Ученик может в любой момент задать ЛЮБОЙ свободный вопрос, перебить, попросить пример из жизни, прикрепить фото черновика или изменить темп ("хватит теории, дай 5 задач"). НИКОГДА не игнорируй его вопрос и не тащи насильно по шаблону.
+2. Отвечай коротко, ясно, без «простыней» ChatGPT. Используй LaTeX ($...$ и $$...$$) для формул.
+3. Ты сам выбираешь лучший формат карточки (field "cardType") для текущего ответа:
+   - "tutor_reply" — прямой живой ответ на свободный вопрос ученика, с понятным разбором и аналогией (НЕ форсирует переход к следующей теме).
+   - "deep_dive" — когда ученик не понял ("не доходит"), разбирает затык с другого угла простыми словами.
+   - "concept" — короткая визуальная карточка нового блока (суть + формула/правило + пример + словарик терминов).
+   - "quick_check" — быстрая интерактивная проверка понимания (вопрос + 4 варианта ответа + правильный индекс + пояснение).
+   - "practice_task" — практическая задача, которую ученик решает сам (текстом или фото черновика) с подсказкой.
+   - "flashcard_sprint" — мини-спринт из 3-5 карточек (вопрос/термин -> ответ) для запоминания.
+   - "boss_check" — мини-испытание по закрытию цели.
+
+ВЕРНИ СТРОГО ВАЛИДНЫЙ JSON ПО СХЕМЕ:
+{
+  "sessionTitle": "Короткое название темы (если нужно уточнить)",
+  "intentLabel": "Короткий бейдж (напр: 💬 Ответ репетитора / 🧠 Разбор / ✍️ Практика / 🔍 С другого угла)",
+  "cardType": "tutor_reply | deep_dive | concept | quick_check | practice_task | flashcard_sprint | boss_check",
+  "title": "Короткий заголовок карточки",
+  "body": "Основной ясный текст (поддерживает **жирный** и LaTeX $...$). Максимум 3-5 коротких абзацев.",
+  "highlightBox": "Опционально: главная формула, правило или аналогия в рамке (или пустая строка)",
+  "terms": [{"term": "Термин на языке контрольной", "translation": "Перевод / суть"}],
+  "question": "Только для quick_check / practice_task / boss_check",
+  "options": ["Вариант A", "Вариант B", "Вариант C", "Вариант D"],
+  "correctIndex": 0,
+  "explanation": "Пояснение правильного ответа для quick_check",
+  "hint": "Подсказка для practice_task / boss_check",
+  "cards": [{"front": "Лицевая сторона", "back": "Обратная сторона"}],
+  "followUpHint": "Короткий дружелюбный вопрос внизу (например: 'Понятно, откуда взялся знак, или разберём ещё пример?')",
+  "goalsUpdate": [
+    {"id": "g1", "title": "Название цели", "status": "pending|active|done", "day": 1}
+  ],
+  "newProfileInsight": "Опционально: ОДНО короткое наблюдение о стиле обучения ученика (только если заметил что-то реально важное, иначе пустая строка)"
+}`;
+    }
+
+    async function startLiveSession(prefill = null) {
+      if (isBusy) return;
+      const subjectId = prefill ? prefill.subjectId : document.getElementById('setupSubject').value;
+      const daysLeft = prefill ? prefill.daysLeft : parseInt(document.getElementById('setupDays').value, 10);
+      const notes = prefill ? prefill.notes : document.getElementById('setupNotes').value.trim();
+      const photosToSend = prefill ? [] : [...setupPhotos];
+      const explainLang = prefill ? prefill.explainLang : setupExplainLang;
+      const examLang = prefill ? prefill.examLang : setupExamLang;
+
+      if (!photosToSend.length && !notes) {
+        showToast('Загрузи хотя бы одно фото или напиши тему, чтобы начать!', 'warn');
+        return;
+      }
+
+      const sub = getSubjectById(subjectId);
+      const newSession = {
+        id: uid('sess'),
+        subjectId,
+        title: notes ? notes.slice(0, 48) : `Подготовка: ${sub.name}`,
+        explainLang,
+        examLang,
+        daysLeft,
+        sourceNotes: notes || 'Материал загружен с фотографий конспекта/учебника.',
+        goals: [],
+        feed: [],
+        history: [],
+        updatedAt: Date.now()
+      };
+
+      state.sessions.unshift(newSession);
+      state.activeSessionId = newSession.id;
+      saveState();
+
+      // Reset setup inputs
+      setupPhotos = [];
+      document.getElementById('setupNotes').value = '';
+      renderSetupPhotos();
+
+      switchSection('learn');
+
+      // Call AI to initialize session
+      const userParts = [];
+      userParts.push({
+        text: `Начни живую подготовку к контрольной (${daysLeft} дн.). ${notes ? 'Заметки/пожелание ученика: ' + notes : 'Проанализируй прикреплённые фото.'} Сформируй гибкую карту целей (goalsUpdate) на ${daysLeft} дн. и выдай первый короткий, вовлекающий шаг.`
+      });
+      photosToSend.forEach(p => {
+        userParts.push({ inlineData: { mimeType: p.mimeType, data: p.base64 } });
+      });
+
+      // Add a compact visual marker of uploaded material
+      newSession.feed.push({
+        id: uid('msg'),
+        role: 'user',
+        text: notes || `Загружено фото материала: ${photosToSend.length} шт.`,
+        photoCount: photosToSend.length
+      });
+      renderLiveFeed(newSession);
+
+      await executeLiveTurn(newSession, userParts, 'Анализирую материалы и строю гибкую карту целей...');
+    }
+
+    async function executeLiveTurn(session, userParts, loadingText = 'Репетитор думает...') {
+      isBusy = true;
+      setLiveLoading(true, loadingText);
+
+      try {
+        // Build conversation contents (keep last 14 turns for rich context)
+        const contents = (session.history || []).slice(-14).map(h => ({
+          role: h.role,
+          parts: [{ text: h.text }]
+        }));
+        contents.push({ role: 'user', parts: userParts });
+
+        const result = await callGemini({
+          systemInstruction: buildLiveTutorSystemPrompt(session),
+          contents,
+          expectJson: true
+        });
+
+        // Graceful fallback if JSON parsing failed
+        let cardData;
+        if (result._fallbackText !== undefined) {
+          cardData = {
+            cardType: 'tutor_reply',
+            intentLabel: '💬 Ответ репетитора',
+            title: 'Ответ',
+            body: result._fallbackText,
+            followUpHint: 'Если хочешь разобрать глубже — просто напиши вопрос ниже.'
+          };
+        } else {
+          cardData = result;
+        }
+
+        // Update title if provided on first turn
+        if (cardData.sessionTitle && session.feed.length <= 2) {
+          session.title = cardData.sessionTitle;
+        }
+
+        // Apply Goals update if provided
+        if (Array.isArray(cardData.goalsUpdate) && cardData.goalsUpdate.length) {
+          session.goals = cardData.goalsUpdate.map((g, idx) => ({
+            id: g.id || `g${idx + 1}`,
+            title: g.title || 'Цель',
+            status: ['pending', 'active', 'done'].includes(g.status) ? g.status : 'pending',
+            day: g.day || 1
+          }));
+        }
+
+        // Silently update Learner Profile if AI discovered a real insight
+        let addedInsight = '';
+        if (cardData.newProfileInsight && cardData.newProfileInsight.trim().length > 4) {
+          const insight = cardData.newProfileInsight.trim();
+          if (!state.learnerProfiles[session.subjectId]) state.learnerProfiles[session.subjectId] = [];
+          const exists = state.learnerProfiles[session.subjectId].some(p => p.toLowerCase() === insight.toLowerCase());
+          if (!exists) {
+            state.learnerProfiles[session.subjectId].push(insight);
+            addedInsight = insight;
+          }
+        }
+
+        // Auto-save flashcards from flashcard_sprint into main deck
+        if (cardData.cardType === 'flashcard_sprint' && Array.isArray(cardData.cards)) {
+          cardData.cards.forEach(c => {
+            if (c.front && c.back && !state.flashcards.some(f => f.front === c.front && f.subjectId === session.subjectId)) {
+              state.flashcards.push({
+                id: uid('fc'),
+                subjectId: session.subjectId,
+                front: c.front,
+                back: c.back,
+                box: 0,
+                nextReview: Date.now()
+              });
+            }
+          });
+        }
+
+        // Append AI card to feed
+        const aiFeedItem = {
+          id: uid('card'),
+          role: 'ai',
+          data: cardData,
+          addedInsight,
+          answeredOption: null,
+          sprintIndex: 0,
+          sprintFlipped: false
+        };
+        session.feed.push(aiFeedItem);
+
+        // Save concise text history for memory
+        const userTextSummary = userParts.filter(p => p.text).map(p => p.text).join(' ') +
+          (userParts.some(p => p.inlineData) ? ' [прикреплено фото]' : '');
+        session.history.push({ role: 'user', text: userTextSummary });
+        session.history.push({
+          role: 'model',
+          text: JSON.stringify({
+            cardType: cardData.cardType,
+            title: cardData.title,
+            body: cardData.body,
+            question: cardData.question || ''
+          })
+        });
+        session.updatedAt = Date.now();
+        saveState();
+
+        renderLearnSection();
+        scrollFeedToBottom();
+
+        if (addedInsight) {
+          showToast(`🧠 Память обновлена: ${addedInsight}`, 'info');
+        }
+      } catch (err) {
+        showToast(`Ошибка ИИ: ${err.message}`, 'error');
+      } finally {
+        isBusy = false;
+        setLiveLoading(false);
+      }
+    }
+
+    function setLiveLoading(loading, text = 'Репетитор думает...') {
+      const ind = document.getElementById('liveTypingIndicator');
+      const btn = document.getElementById('dockSendBtn');
+      if (loading) {
+        document.getElementById('liveTypingText').textContent = text;
+        ind.classList.remove('hidden');
+        btn.disabled = true;
+        scrollFeedToBottom();
+      } else {
+        ind.classList.add('hidden');
+        btn.disabled = false;
+      }
+    }
+
+    function scrollFeedToBottom() {
+      const scroller = document.getElementById('liveFeedScroll');
+      if (scroller) {
+        setTimeout(() => {
+          scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
+        }, 60);
+      }
+    }
+
+    /* ---------- Free-Form Tutor Input Dock Handlers ---------- */
+    function handleDockKeydown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendFreeFormMessage();
+      }
+    }
+
+    async function handleDockPhoto(ev) {
+      const file = ev.target.files?.[0];
+      if (!file) return;
+      try {
+        dockPhoto = await compressImageFile(file);
+        document.getElementById('dockPhotoThumb').src = dockPhoto.dataUrl;
+        document.getElementById('dockPhotoPreviewWrap').classList.remove('hidden');
+      } catch (e) {
+        showToast('Не удалось загрузить фото', 'error');
+      }
+      ev.target.value = '';
+    }
+
+    function clearDockPhoto() {
+      dockPhoto = null;
+      document.getElementById('dockPhotoPreviewWrap').classList.add('hidden');
+    }
+
+    function sendQuickChip(promptText) {
+      document.getElementById('dockTextarea').value = promptText;
+      sendFreeFormMessage();
+    }
+
+    async function sendFreeFormMessage(overrideText = null, overridePhoto = null) {
+      if (isBusy) return;
+      const session = getActiveSession();
+      if (!session) return;
+
+      const ta = document.getElementById('dockTextarea');
+      const text = overrideText !== null ? overrideText : ta.value.trim();
+      const photo = overridePhoto !== null ? overridePhoto : dockPhoto;
+
+      if (!text && !photo) return;
+
+      if (overrideText === null) {
+        ta.value = '';
+        ta.style.height = 'auto';
+      }
+      if (overridePhoto === null && dockPhoto) {
+        clearDockPhoto();
+      }
+
+      // Render user bubble immediately
+      session.feed.push({
+        id: uid('msg'),
+        role: 'user',
+        text: text || 'Посмотри на это фото и помоги разобраться',
+        photoPreview: photo ? photo.dataUrl : null
+      });
+      saveState();
+      renderLiveFeed(session);
+      scrollFeedToBottom();
+
+      const parts = [{ text: text || 'Ученик прикрепил фото своего решения или учебника. Разбери его и ответь.' }];
+      if (photo) {
+        parts.push({ inlineData: { mimeType: photo.mimeType, data: photo.base64 } });
+      }
+
+      await executeLiveTurn(session, parts, 'Читаю твой вопрос и подстраиваю ответ...');
+    }
+
+    /* ---------- Render Live Feed (Generative UI Cards) ---------- */
+    function renderLiveFeed(session) {
+      const container = document.getElementById('liveFeedContainer');
+      if (!container) return;
+
+      container.innerHTML = session.feed.map(item => {
+        if (item.role === 'user') {
+          return `
+            <div class="flex justify-end animate-in">
+              <div class="max-w-[85%] sm:max-w-[75%] bg-indigo-600/20 border border-indigo-500/30 rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm text-slate-100 space-y-2">
+                ${item.photoPreview ? `<img src="${item.photoPreview}" class="max-h-48 rounded-xl border border-indigo-500/30 object-contain" />` : ''}
+                ${item.photoCount ? `<div class="inline-flex items-center gap-1.5 text-[11px] text-indigo-300 bg-indigo-500/15 px-2 py-0.5 rounded-md"><i data-lucide="images" class="w-3 h-3"></i> ${item.photoCount} фото загружено</div>` : ''}
+                <div>${formatRichText(item.text)}</div>
+              </div>
+            </div>`;
+        }
+
+        const d = item.data || {};
+        const type = d.cardType || 'tutor_reply';
+        const badgeStyles = {
+          tutor_reply: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/25',
+          deep_dive: 'bg-amber-500/15 text-amber-300 border-amber-500/25',
+          concept: 'bg-sky-500/15 text-sky-300 border-sky-500/25',
+          quick_check: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25',
+          practice_task: 'bg-violet-500/15 text-violet-300 border-violet-500/25',
+          flashcard_sprint: 'bg-pink-500/15 text-pink-300 border-pink-500/25',
+          boss_check: 'bg-rose-500/15 text-rose-300 border-rose-500/25'
+        };
+
+        let interactiveHtml = '';
+
+        // Quick Check (MCQ)
+        if (type === 'quick_check' && Array.isArray(d.options) && d.options.length) {
+          interactiveHtml = `
+            <div class="mt-3 pt-3 border-t border-borderSubtle space-y-2.5">
+              ${d.question ? `<div class="text-sm font-semibold text-white">${formatRichText(d.question)}</div>` : ''}
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                ${d.options.map((opt, idx) => {
+                  const chosen = item.answeredOption !== null;
+                  const isCorrect = idx === d.correctIndex;
+                  const isPicked = idx === item.answeredOption;
+                  let cls = 'bg-bgElevated hover:bg-bgHover border-borderSubtle text-slate-200';
+                  if (chosen) {
+                    if (isCorrect) cls = 'bg-emerald-500/20 border-emerald-500/50 text-emerald-200';
+                    else if (isPicked) cls = 'bg-rose-500/20 border-rose-500/50 text-rose-200';
+                    else cls = 'bg-bgElevated/50 border-borderSubtle text-slate-500';
+                  }
+                  return `<button ${chosen ? 'disabled' : ''} onclick="answerQuickCheck('${item.id}', ${idx})" class="text-left px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm transition ${cls}">
+                    <span class="font-bold mr-1.5 opacity-70">${String.fromCharCode(65 + idx)}.</span> ${formatRichText(opt)}
+                  </button>`;
+                }).join('')}
+              </div>
+              ${item.answeredOption !== null && d.explanation ? `
+                <div class="p-3 rounded-xl bg-bgElevated border border-borderSubtle text-xs text-slate-300 leading-relaxed">
+                  <span class="font-semibold text-white">Разбор:</span> ${formatRichText(d.explanation)}
+                </div>` : ''}
+            </div>`;
+        }
+
+        // Practice Task / Boss Check (text + photo check)
+        if (type === 'practice_task' || type === 'boss_check') {
+          interactiveHtml = `
+            <div class="mt-3 pt-3 border-t border-borderSubtle space-y-3">
+              ${d.question ? `<div class="p-3.5 rounded-xl bg-bgElevated border border-violet-500/25 text-sm text-white font-medium">${formatRichText(d.question)}</div>` : ''}
+              ${d.hint ? `
+                <details class="text-xs text-slate-400">
+                  <summary class="cursor-pointer text-indigo-400 hover:text-indigo-300 font-medium select-none">💡 Показать подсказку</summary>
+                  <div class="mt-1.5 p-2.5 rounded-lg bg-bgElevated border border-borderSubtle text-slate-300">${formatRichText(d.hint)}</div>
+                </details>` : ''}
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input id="taskInput_${item.id}" type="text" placeholder="Напиши свой ответ или ход решения..." class="flex-1 bg-bgElevated border border-borderSubtle rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500" onkeydown="if(event.key==='Enter') submitPracticeTask('${item.id}')" />
+                <div class="flex gap-1.5">
+                  <label class="px-3 py-2 rounded-xl bg-bgElevated hover:bg-bgHover border border-borderSubtle text-xs text-slate-300 cursor-pointer flex items-center gap-1.5 shrink-0">
+                    <i data-lucide="camera" class="w-3.5 h-3.5 text-indigo-400"></i> Фото
+                    <input type="file" accept="image/*" class="hidden" onchange="submitPracticePhoto('${item.id}', event)" />
+                  </label>
+                  <button onclick="submitPracticeTask('${item.id}')" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shrink-0 transition">Проверить</button>
+                </div>
+              </div>
+            </div>`;
+        }
+
+        // Inline Flashcard Sprint
+        if (type === 'flashcard_sprint' && Array.isArray(d.cards) && d.cards.length) {
+          const idx = Math.min(item.sprintIndex || 0, d.cards.length - 1);
+          const card = d.cards[idx];
+          interactiveHtml = `
+            <div class="mt-3 pt-3 border-t border-borderSubtle space-y-2.5">
+              <div class="flex items-center justify-between text-[11px] text-slate-400">
+                <span>Мини-спринт (сохранено в «3D Карточки»)</span>
+                <span>${idx + 1} / ${d.cards.length}</span>
+              </div>
+              <div onclick="toggleSprintFlip('${item.id}')" class="p-5 rounded-xl bg-bgElevated border border-indigo-500/30 hover:border-indigo-500/60 cursor-pointer text-center min-h-[110px] flex flex-col items-center justify-center transition">
+                <div class="text-[10px] uppercase tracking-wider text-indigo-400 mb-1">${item.sprintFlipped ? 'Ответ / Перевод' : 'Нажми, чтобы перевернуть'}</div>
+                <div class="text-sm sm:text-base font-semibold text-white">${formatRichText(item.sprintFlipped ? card.back : card.front)}</div>
+              </div>
+              <div class="flex justify-between gap-2">
+                <button onclick="stepSprintCard('${item.id}', -1)" class="px-3 py-1.5 rounded-lg bg-bgElevated hover:bg-bgHover text-xs text-slate-300">← Назад</button>
+                <button onclick="stepSprintCard('${item.id}', 1)" class="px-3 py-1.5 rounded-lg bg-indigo-600/25 hover:bg-indigo-600/40 text-xs text-indigo-200 font-medium">Следующая →</button>
+              </div>
+            </div>`;
+        }
+
+        return `
+          <div class="bg-bgCard border border-borderSubtle rounded-2xl p-4 sm:p-5 space-y-3 shadow-md animate-in">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${badgeStyles[type] || badgeStyles.tutor_reply}">
+                ${escapeHtml(d.intentLabel || '💬 Репетитор')}
+              </span>
+              ${item.addedInsight ? `<span class="text-[10px] text-violet-300 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full">🧠 Запомнил стиль</span>` : ''}
+            </div>
+
+            ${d.title ? `<h3 class="text-base font-bold text-white leading-snug">${formatRichText(d.title)}</h3>` : ''}
+            ${d.body ? `<div class="text-sm text-slate-200 leading-relaxed space-y-2">${formatRichText(d.body)}</div>` : ''}
+
+            ${d.highlightBox ? `
+              <div class="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/25 text-sm text-indigo-100">
+                ${formatRichText(d.highlightBox)}
+              </div>` : ''}
+
+            ${Array.isArray(d.terms) && d.terms.length ? `
+              <div class="flex flex-wrap gap-1.5 pt-1">
+                ${d.terms.map(t => `
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-bgElevated border border-borderSubtle text-xs">
+                    <span class="font-semibold text-emerald-300">${escapeHtml(t.term)}</span>
+                    <span class="text-slate-500">—</span>
+                    <span class="text-slate-300">${escapeHtml(t.translation)}</span>
+                  </span>`).join('')}
+              </div>` : ''}
+
+            ${interactiveHtml}
+
+            ${d.followUpHint ? `
+              <div class="pt-2 border-t border-borderSubtle/60 text-xs text-slate-400 flex items-center gap-1.5">
+                <i data-lucide="message-circle" class="w-3.5 h-3.5 text-indigo-400 shrink-0"></i>
+                <span>${formatRichText(d.followUpHint)}</span>
+              </div>` : ''}
+          </div>`;
+      }).join('');
+
+      renderMathIn(container);
+      lucide.createIcons();
+    }
+
+    function answerQuickCheck(cardId, optionIdx) {
+      const session = getActiveSession();
+      if (!session) return;
+      const item = session.feed.find(f => f.id === cardId);
+      if (!item || item.answeredOption !== null) return;
+      item.answeredOption = optionIdx;
+      const isRight = optionIdx === item.data.correctIndex;
+      saveState();
+      renderLiveFeed(session);
+      showToast(isRight ? '✅ Верно!' : '❌ Есть ошибка — смотри разбор или спроси ниже', isRight ? 'success' : 'warn');
+    }
+
+    function submitPracticeTask(cardId) {
+      const input = document.getElementById(`taskInput_${cardId}`);
+      if (!input) return;
+      const ans = input.value.trim();
+      if (!ans) return;
+      input.value = '';
+      sendFreeFormMessage(`Мой ответ на задачу: ${ans}`);
+    }
+
+    async function submitPracticePhoto(cardId, ev) {
+      const file = ev.target.files?.[0];
+      if (!file) return;
+      try {
+        const photo = await compressImageFile(file);
+        sendFreeFormMessage('Вот фото моего решения задачи на листке. Проверь, пожалуйста!', photo);
+      } catch (e) {
+        showToast('Не удалось загрузить фото', 'error');
+      }
+      ev.target.value = '';
+    }
+
+    function toggleSprintFlip(cardId) {
+      const session = getActiveSession();
+      const item = session?.feed.find(f => f.id === cardId);
+      if (!item) return;
+      item.sprintFlipped = !item.sprintFlipped;
+      renderLiveFeed(session);
+    }
+
+    function stepSprintCard(cardId, delta) {
+      const session = getActiveSession();
+      const item = session?.feed.find(f => f.id === cardId);
+      if (!item || !item.data?.cards?.length) return;
+      const len = item.data.cards.length;
+      item.sprintIndex = ((item.sprintIndex || 0) + delta + len) % len;
+      item.sprintFlipped = false;
+      renderLiveFeed(session);
+    }
+
+    /* ---------- Goal Map & Learner Memory Drawer ---------- */
+    function toggleMemoryDrawer(force) {
+      const drawer = document.getElementById('memoryDrawer');
+      if (force === false) drawer.classList.add('hidden');
+      else if (force === true) { drawer.classList.remove('hidden'); drawer.classList.add('flex'); }
+      else {
+        drawer.classList.toggle('hidden');
+        drawer.classList.toggle('flex');
+      }
+    }
+
+    function renderGoalsAndMemoryDrawer(session) {
+      const goals = session.goals || [];
+      const doneCount = goals.filter(g => g.status === 'done').length;
+      document.getElementById('wsGoalsCountPill').textContent = `${doneCount}/${goals.length}`;
+
+      const goalsList = document.getElementById('drawerGoalsList');
+      if (!goals.length) {
+        goalsList.innerHTML = `<div class="text-[11px] text-slate-500">Цели появятся автоматически по ходу занятия.</div>`;
+      } else {
+        goalsList.innerHTML = goals.map(g => {
+          const isDone = g.status === 'done';
+          const isActive = g.status === 'active';
+          return `
+            <div class="flex items-start gap-2 p-2 rounded-xl bg-bgElevated border ${isActive ? 'border-indigo-500/40' : 'border-borderSubtle'} group">
+              <button onclick="toggleGoalStatus('${g.id}')" class="mt-0.5 shrink-0 text-slate-400 hover:text-emerald-400">
+                <i data-lucide="${isDone ? 'check-circle-2' : 'circle'}" class="w-4 h-4 ${isDone ? 'text-emerald-400' : ''}"></i>
+              </button>
+              <button onclick="focusOnGoal('${escapeHtml(g.title).replace(/'/g, "\\'")}')" class="text-left flex-1 min-w-0">
+                <div class="text-xs ${isDone ? 'line-through text-slate-500' : 'text-slate-200'} leading-snug">${escapeHtml(g.title)}</div>
+                <div class="text-[10px] text-slate-500">День ${g.day || 1} · нажми, чтобы перейти</div>
+              </button>
+            </div>`;
+        }).join('');
+      }
+
+      const profile = state.learnerProfiles[session.subjectId] || [];
+      const profList = document.getElementById('drawerProfileList');
+      if (!profile.length) {
+        profList.innerHTML = `<div class="text-[11px] text-slate-500">Пока пусто. ИИ сам заполнит по мере общения.</div>`;
+      } else {
+        profList.innerHTML = profile.map((note, idx) => `
+          <div class="flex items-start justify-between gap-2 p-2 rounded-xl bg-violet-500/10 border border-violet-500/20 text-[11px] text-violet-100">
+            <span>${escapeHtml(note)}</span>
+            <button onclick="removeProfileNote('${session.subjectId}', ${idx})" class="text-violet-300/60 hover:text-rose-400 shrink-0"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+          </div>`).join('');
+      }
+      lucide.createIcons();
+    }
+
+    function toggleGoalStatus(goalId) {
+      const session = getActiveSession();
+      const g = session?.goals.find(x => x.id === goalId);
+      if (!g) return;
+      g.status = g.status === 'done' ? 'pending' : 'done';
+      saveState();
+      renderGoalsAndMemoryDrawer(session);
+    }
+
+    function focusOnGoal(goalTitle) {
+      toggleMemoryDrawer(false);
+      sendFreeFormMessage(`Давай сейчас сфокусируемся на цели: «${goalTitle}»`);
+    }
+
+    function addCustomGoal() {
+      const session = getActiveSession();
+      const inp = document.getElementById('newGoalInput');
+      const val = inp.value.trim();
+      if (!session || !val) return;
+      session.goals.push({ id: uid('g'), title: val, status: 'pending', day: 1 });
+      inp.value = '';
+      saveState();
+      renderGoalsAndMemoryDrawer(session);
+    }
+
+    function addProfileNoteFromDrawer() {
+      const session = getActiveSession();
+      const inp = document.getElementById('newProfileNoteInput');
+      const val = inp.value.trim();
+      if (!session || !val) return;
+      if (!state.learnerProfiles[session.subjectId]) state.learnerProfiles[session.subjectId] = [];
+      state.learnerProfiles[session.subjectId].push(val);
+      inp.value = '';
+      saveState();
+      renderGoalsAndMemoryDrawer(session);
+    }
+
+    function removeProfileNote(subId, idx) {
+      if (!state.learnerProfiles[subId]) return;
+      state.learnerProfiles[subId].splice(idx, 1);
+      saveState();
+      const session = getActiveSession();
+      if (session && session.subjectId === subId) renderGoalsAndMemoryDrawer(session);
+      renderSettingsProfile();
+    }
+
+    /* ---------- 5-Minute Cheat Sheet ---------- */
+    async function generateCheatSheet() {
+      const session = getActiveSession();
+      if (!session) return;
+      openModal('⚡ Шпаргалка за 5 минут', `<div class="py-8 text-center text-xs text-slate-400">Собираю всю суть темы на один экран...</div>`);
+
+      try {
+        const sub = getSubjectById(session.subjectId);
+        const prompt = `Сделай супер-компактную шпаргалку «за 5 минут до контрольной» по теме "${session.title}" (${sub.name}, ${state.settings.grade}).
+Язык объяснений: ${session.explainLang}, язык терминов контрольной: ${session.examLang}.
+Контекст: ${session.sourceNotes}
+История: ${session.history.slice(-6).map(h => h.text).join('\n')}
+Верни JSON: {"coreRules": ["Главное правило/формула 1 (с LaTeX)"], "terms": [{"term": "...", "meaning": "..."}], "traps": ["Типичная ошибка на контрольной 1"]}`;
+
+        const res = await callGemini({
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          expectJson: true
+        });
+
+        if (res._fallbackText) {
+          openModal('⚡ Шпаргалка за 5 минут', `<div class="text-sm leading-relaxed">${formatRichText(res._fallbackText)}</div>`);
+          return;
+        }
+
+        const html = `
+          <div class="space-y-4">
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-2">📌 Главные правила и формулы</h4>
+              <ul class="space-y-1.5">
+                ${(res.coreRules || []).map(r => `<li class="p-2.5 rounded-xl bg-bgElevated border border-borderSubtle text-xs sm:text-sm">${formatRichText(r)}</li>`).join('')}
+              </ul>
+            </div>
+            ${(res.terms || []).length ? `
+              <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">🗣️ Словарик контрольной</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  ${res.terms.map(t => `<div class="p-2.5 rounded-xl bg-bgElevated border border-borderSubtle text-xs"><strong class="text-emerald-300">${escapeHtml(t.term)}</strong> — ${escapeHtml(t.meaning)}</div>`).join('')}
+                </div>
+              </div>` : ''}
+            ${(res.traps || []).length ? `
+              <div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400 mb-2">⚠️ Ловушки, где чаще всего ошибаются</h4>
+                <ul class="space-y-1.5">
+                  ${res.traps.map(tr => `<li class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-100">${formatRichText(tr)}</li>`).join('')}
+                </ul>
+              </div>` : ''}
+          </div>`;
+        openModal(`⚡ Шпаргалка: ${session.title}`, html);
+      } catch (err) {
+        openModal('Ошибка', `<div class="text-rose-400 text-xs">${escapeHtml(err.message)}</div>`);
+      }
+    }
+
+    /* ---------- 1-Click Demo Session ---------- */
+    function startDemoSession() {
+      const demoId = uid('demo');
+      const demoSession = {
+        id: demoId,
+        subjectId: 'fyq',
+        title: 'Estequiometría y el Mol (Химия)',
+        explainLang: 'RU',
+        examLang: 'ES',
+        daysLeft: 3,
+        sourceNotes: '4º ESO Física y Química: concepto de mol, masa molar (g/mol), número de Avogadro (6.022e23), ajuste de reacciones químicas y cálculos estequiométricos.',
+        goals: [
+          { id: 'dg1', title: 'Понять, что такое Mol и Masa Molar без зубрёжки', status: 'active', day: 1 },
+          { id: 'dg2', title: 'Уравнивание реакций (Ajuste de reacciones)', status: 'pending', day: 2 },
+          { id: 'dg3', title: 'Расчёт граммов по уравнению + Босс-проверка', status: 'pending', day: 3 }
+        ],
+        feed: [
+          {
+            id: uid('c'),
+            role: 'ai',
+            data: {
+              cardType: 'concept',
+              intentLabel: '🧠 Живой старт',
+              title: 'Что такое Mol? (без заумных определений)',
+              body: 'Представь, что ты пришёл в магазин за яйцами — ты просишь **дюжину** (12 штук), а не пересчитываешь по одному.\n\nВ химии атомы крошечные, поэтому химики придумали свою «упаковку» — **1 mol**. В одной такой упаковке всегда лежит ровно $6{,}022 \\times 10^{23}$ частиц (число Авогадро).',
+              highlightBox: 'Главная формула дня: $$n = \\frac{m}{M}$$ где $n$ — число молей (mol), $m$ — масса вещества (g), $M$ — молярная масса (g/mol) из таблицы Менделеева.',
+              terms: [
+                { term: 'Mol', translation: 'упаковка частиц' },
+                { term: 'Masa molar (M)', translation: 'масса 1 моля в г/моль' },
+                { term: 'Reactivos → Productos', translation: 'исходные → продукты' }
+              ],
+              followUpHint: 'Можешь сразу задать ЛЮБОЙ вопрос в поле внизу (например: «откуда брать M для воды?» или «дай сразу задачу на расчёт»)'
+            },
+            answeredOption: null
+          },
+          {
+            id: uid('c'),
+            role: 'ai',
+            data: {
+              cardType: 'quick_check',
+              intentLabel: '🎯 Быстрая проверка',
+              title: 'Мини-тест на испанском (как на контрольной)',
+              body: 'Давай проверим формулу на воде $H_2O$ ($M = 18\\text{ g/mol}$).',
+              question: '¿Cuántos moles hay en $36\\text{ g}$ de agua ($H_2O$)?',
+              options: ['0,5 moles', '2 moles', '18 moles', '36 moles'],
+              correctIndex: 1,
+              explanation: 'Используем $n = \\frac{m}{M} = \\frac{36\\text{ g}}{18\\text{ g/mol}} = 2\\text{ moles}$.',
+              followUpHint: 'Если всё ясно — пиши «го дальше» или спроси что угодно своё!'
+            },
+            answeredOption: null
+          }
+        ],
+        history: [
+          { role: 'user', text: 'Начни демо-сессию по теме Estequiometría y el Mol (4º ESO, объяснение RU, контрольная ES).' },
+          { role: 'model', text: 'Объяснил понятие Mol через аналогию с дюжиной яиц, дал формулу n = m/M и мини-проверку на 36 г воды.' }
+        ],
+        updatedAt: Date.now()
+      };
+
+      state.sessions.unshift(demoSession);
+      state.activeSessionId = demoId;
+
+      // Also seed 3 demo flashcards if empty
+      if (!state.flashcards.length) {
+        state.flashcards.push(
+          { id: uid('fc'), subjectId: 'fyq', front: '¿Qué es la Masa Molar ($M$)?', back: 'Масса 1 моля вещества в г/моль (численно равна атомной/молекулярной массе из таблицы).', box: 0, nextReview: Date.now() },
+          { id: uid('fc'), subjectId: 'fyq', front: 'Fórmula de moles ($n$)', back: '$$n = \\frac{m}{M}$$ (масса в граммах делить на молярную массу)', box: 0, nextReview: Date.now() },
+          { id: uid('fc'), subjectId: 'fyq', front: 'Número de Avogadro ($N_A$)', back: '$6{,}022 \\times 10^{23}$ частиц в 1 моле', box: 0, nextReview: Date.now() }
+        );
+      }
+
+      saveState();
+      switchSection('learn');
+      showToast('✨ Демо-сессия открыта! Попробуй написать свой вопрос внизу.', 'success');
+    }
+
+    /* ==========================================================================
+       6. SECTION 2: DAILY COLLECTOR & ARCHIVE
+       ========================================================================== */
+    function getSubjectCollector(subId) {
+      if (!state.collector[subId]) {
+        state.collector[subId] = { active: [], archive: [] };
+      }
+      return state.collector[subId];
+    }
+
+    function selectCollectorSubject(subId) {
+      state.collectorSubjectId = subId;
+      saveState();
+      renderCollector();
+    }
+
+    function setCollectorTab(tab) {
+      state.collectorTab = tab;
+      saveState();
+      renderCollector();
+    }
+
+    async function handleCollectorPhotos(ev) {
+      const files = Array.from(ev.target.files || []);
+      if (!files.length) return;
+      collectorPhotos = [];
+      for (const f of files) {
+        try {
+          collectorPhotos.push(await compressImageFile(f));
+        } catch (e) {}
+      }
+      document.getElementById('collectorUploadInfo').textContent = `Выбрано фото: ${collectorPhotos.length} шт.`;
+      ev.target.value = '';
+    }
+
+    async function extractDailyNote() {
+      const textInput = document.getElementById('collectorOptionalText').value.trim();
+      if (!collectorPhotos.length && !textInput) {
+        showToast('Добавь фото урока или напиши пару строк текстом', 'warn');
+        return;
+      }
+      const btn = document.getElementById('btnExtractNote');
+      btn.disabled = true;
+      btn.innerHTML = '<span>Распознаю...</span>';
+
+      try {
+        const sub = getSubjectById(state.collectorSubjectId);
+        const parts = [{
+          text: `Распознай и структурируй конспект с урока по предмету "${sub.name}" (${state.settings.grade}, Испания). ${textInput ? 'Комментарий ученика: ' + textInput : ''}
+Верни JSON: {"title": "Короткое название темы урока", "summary": "Краткая суть (2-3 предложения)", "keyPoints": ["Главный пункт или формула (LaTeX)"], "terms": ["Термин — значение"]}`
+        }];
+        collectorPhotos.forEach(p => parts.push({ inlineData: { mimeType: p.mimeType, data: p.base64 } }));
+
+        const res = await callGemini({ contents: [{ role: 'user', parts }], expectJson: true });
+        const col = getSubjectCollector(state.collectorSubjectId);
+        col.active.unshift({
+          id: uid('note'),
+          date: new Date().toLocaleDateString('ru-RU', { day: '2-digit', month: 'short' }),
+          title: res.title || textInput.slice(0, 45) || 'Конспект урока',
+          summary: res.summary || res._fallbackText || textInput,
+          keyPoints: Array.isArray(res.keyPoints) ? res.keyPoints : [],
+          terms: Array.isArray(res.terms) ? res.terms : []
+        });
+
+        collectorPhotos = [];
+        document.getElementById('collectorOptionalText').value = '';
+        document.getElementById('collectorUploadInfo').textContent = 'Можно несколько фото сразу';
+        saveState();
+        renderCollector();
+        showToast('✅ Конспект сохранён в Активное!', 'success');
+      } catch (err) {
+        showToast(`Ошибка распознавания: ${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="sparkles" class="w-4 h-4"></i><span>Распознать и сохранить</span>';
+        lucide.createIcons();
+      }
+    }
+
+    function renderCollector() {
+      const subs = getVisibleSubjects();
+      if (!subs.some(s => s.id === state.collectorSubjectId)) {
+        state.collectorSubjectId = subs[0].id;
+      }
+      const curSub = getSubjectById(state.collectorSubjectId);
+      document.getElementById('collectorCurrentSubName').textContent = `${curSub.icon} ${curSub.name}`;
+
+      // Subject pills
+      document.getElementById('collectorSubjectPills').innerHTML = subs.map(s => {
+        const cnt = getSubjectCollector(s.id).active.length;
+        const active = s.id === state.collectorSubjectId;
+        return `
+          <button onclick="selectCollectorSubject('${s.id}')" class="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1.5 ${
+            active ? 'bg-indigo-500/20 border-indigo-500 text-indigo-200' : 'bg-bgCard border-borderSubtle text-slate-400 hover:text-slate-200'
+          }">
+            <span>${s.icon}</span>
+            <span>${escapeHtml(s.name)}</span>
+            ${cnt ? `<span class="px-1.5 py-0.2 rounded bg-indigo-500/30 text-indigo-200 text-[10px]">${cnt}</span>` : ''}
+          </button>`;
+      }).join('');
+
+      const col = getSubjectCollector(state.collectorSubjectId);
+      document.getElementById('colActiveCount').textContent = col.active.length;
+      document.getElementById('colArchiveCount').textContent = col.archive.length;
+
+      const isAct = state.collectorTab === 'active';
+      document.getElementById('colTabActive').className = `px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${isAct ? 'bg-indigo-500/20 text-indigo-300' : 'text-slate-400 hover:text-slate-200'}`;
+      document.getElementById('colTabArchive').className = `px-3.5 py-1.5 rounded-xl text-xs font-semibold transition ${!isAct ? 'bg-indigo-500/20 text-indigo-300' : 'text-slate-400 hover:text-slate-200'}`;
+
+      document.getElementById('colActiveActions').classList.toggle('hidden', !isAct || !col.active.length);
+      document.getElementById('collectorActiveList').classList.toggle('hidden', !isAct);
+      document.getElementById('collectorArchiveWrap').classList.toggle('hidden', isAct);
+
+      // Render Active list
+      const actEl = document.getElementById('collectorActiveList');
+      if (!col.active.length) {
+        actEl.innerHTML = `<div class="p-8 text-center bg-bgCard border border-borderSubtle rounded-2xl text-xs text-slate-500">В этом предмете пока нет активных конспектов. Загрузи фото после урока!</div>`;
+      } else {
+        actEl.innerHTML = col.active.map((n, idx) => `
+          <div class="bg-bgCard border border-borderSubtle rounded-2xl p-4 space-y-2">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-bgElevated text-slate-400 mr-1.5">${escapeHtml(n.date)}</span>
+                <span class="text-sm font-bold text-white">${escapeHtml(n.title)}</span>
+              </div>
+              <button onclick="deleteCollectorNote(${idx})" class="text-slate-500 hover:text-rose-400 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+            </div>
+            <div class="text-xs text-slate-300 leading-relaxed">${formatRichText(n.summary)}</div>
+            ${n.keyPoints?.length ? `<ul class="list-disc pl-4 space-y-1 text-xs text-slate-300">${n.keyPoints.map(k => `<li>${formatRichText(k)}</li>`).join('')}</ul>` : ''}
+            ${n.terms?.length ? `<div class="flex flex-wrap gap-1.5 pt-1">${n.terms.map(t => `<span class="px-2 py-0.5 rounded-md bg-bgElevated border border-borderSubtle text-[11px] text-emerald-300">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+          </div>`).join('');
+        renderMathIn(actEl);
+      }
+
+      // Render Archive list
+      const q = (document.getElementById('archiveSearchInput')?.value || '').trim().toLowerCase();
+      const archEl = document.getElementById('collectorArchiveList');
+      const filtered = col.archive.filter(a => !q || a.title.toLowerCase().includes(q) || a.items.some(i => (i.title + ' ' + i.summary).toLowerCase().includes(q)));
+
+      if (!filtered.length) {
+        archEl.innerHTML = `<div class="p-8 text-center bg-bgCard border border-borderSubtle rounded-2xl text-xs text-slate-500">Архив пуст или ничего не найдено.</div>`;
+      } else {
+        archEl.innerHTML = filtered.map(a => `
+          <details class="bg-bgCard border border-borderSubtle rounded-2xl p-4">
+            <summary class="cursor-pointer flex items-center justify-between text-sm font-semibold text-slate-200 select-none">
+              <span>📦 ${escapeHtml(a.title)} <span class="text-xs font-normal text-slate-500">(${a.items.length} консп. · ${escapeHtml(a.archivedAt)})</span></span>
+            </summary>
+            <div class="mt-3 pt-3 border-t border-borderSubtle space-y-2.5">
+              ${a.items.map(i => `<div class="p-3 rounded-xl bg-bgElevated text-xs space-y-1"><div class="font-semibold text-white">${escapeHtml(i.title)}</div><div class="text-slate-300">${formatRichText(i.summary)}</div></div>`).join('')}
+            </div>
+          </details>`).join('');
+        renderMathIn(archEl);
+      }
+
+      lucide.createIcons();
+    }
+
+    function deleteCollectorNote(idx) {
+      getSubjectCollector(state.collectorSubjectId).active.splice(idx, 1);
+      saveState();
+      renderCollector();
+    }
+
+    function archiveActiveNotes() {
+      const col = getSubjectCollector(state.collectorSubjectId);
+      if (!col.active.length) return;
+      const firstTitle = col.active[col.active.length - 1]?.title || 'Сданная тема';
+      col.archive.unshift({
+        id: uid('arch'),
+        archivedAt: new Date().toLocaleDateString('ru-RU'),
+        title: `${firstTitle}${col.active.length > 1 ? ` + ещё ${col.active.length - 1}` : ''}`,
+        items: [...col.active]
+      });
+      col.active = [];
+      saveState();
+      renderCollector();
+      showToast('📦 Тема перенесена в Архив!', 'success');
+    }
+
+    function launchLearningFromCollector() {
+      const col = getSubjectCollector(state.collectorSubjectId);
+      if (!col.active.length) return;
+      const compiled = col.active.map(n => `• ${n.title}: ${n.summary} ${(n.keyPoints || []).join('; ')}`).join('\n');
+      startLiveSession({
+        subjectId: state.collectorSubjectId,
+        daysLeft: 3,
+        explainLang: 'RU',
+        examLang: 'ES',
+        notes: `Подготовка по накопленным конспектам:\n${compiled}`
+      });
+    }
+
+    /* ==========================================================================
+       7. SECTION 3: HOMEWORK (SOCRATIC TUTOR + NOTEBOOK GRADER)
+       ========================================================================== */
+    function setHomeworkMode(mode) {
+      state.homework.mode = mode;
+      saveState();
+      renderHomeworkSection();
+    }
+
+    function renderHomeworkSection() {
+      populateSubjectDropdowns();
+      const mode = state.homework.mode || 'socratic';
+      const isSoc = mode === 'socratic';
+      document.getElementById('hwModeSocratic').className = `px-3 py-1.5 rounded-lg text-xs font-semibold transition ${isSoc ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'}`;
+      document.getElementById('hwModeGrade').className = `px-3 py-1.5 rounded-lg text-xs font-semibold transition ${!isSoc ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-200'}`;
+      document.getElementById('hwSocraticView').classList.toggle('hidden', !isSoc);
+      document.getElementById('hwGradeView').classList.toggle('hidden', isSoc);
+
+      renderHomeworkChat();
+      renderHomeworkGradeResult();
+      lucide.createIcons();
+    }
+
+    async function handleHwPhoto(ev) {
+      const file = ev.target.files?.[0];
+      if (!file) return;
+      hwChatPhoto = await compressImageFile(file);
+      document.getElementById('hwPhotoThumb').src = hwChatPhoto.dataUrl;
+      document.getElementById('hwPhotoPreviewWrap').classList.remove('hidden');
+      ev.target.value = '';
+    }
+
+    function clearHwPhoto() {
+      hwChatPhoto = null;
+      document.getElementById('hwPhotoPreviewWrap').classList.add('hidden');
+    }
+
+    function clearHomeworkChat() {
+      state.homework.messages = [];
+      saveState();
+      renderHomeworkChat();
+    }
+
+    function renderHomeworkChat() {
+      const list = document.getElementById('hwChatList');
+      if (!state.homework.messages.length) {
+        list.innerHTML = `
+          <div class="bg-bgCard border border-borderSubtle rounded-2xl p-6 text-center space-y-2">
+            <div class="w-10 h-10 mx-auto rounded-xl bg-indigo-500/15 text-indigo-400 flex items-center justify-center"><i data-lucide="handshake" class="w-5 h-5"></i></div>
+            <div class="text-sm font-bold text-white">Режим «Разбери со мной»</div>
+            <div class="text-xs text-slate-400 max-w-md mx-auto">Скинь фото домашнего задания или напиши условие. Я не буду просто выдавать готовый ответ — буду вести тебя по шагам и отвечать на любые вопросы, чтобы ты реально понял тему.</div>
+          </div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      list.innerHTML = state.homework.messages.map(m => {
+        if (m.role === 'user') {
+          return `
+            <div class="flex justify-end animate-in">
+              <div class="max-w-[85%] bg-indigo-600/20 border border-indigo-500/30 rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm text-slate-100 space-y-2">
+                ${m.photoPreview ? `<img src="${m.photoPreview}" class="max-h-48 rounded-xl" />` : ''}
+                <div>${formatRichText(m.text)}</div>
+              </div>
+            </div>`;
+        }
+        return `
+          <div class="bg-bgCard border border-borderSubtle rounded-2xl p-4 text-sm text-slate-200 leading-relaxed animate-in">
+            ${formatRichText(m.text)}
+          </div>`;
+      }).join('');
+      renderMathIn(list);
+    }
+
+    async function sendHomeworkMessage(overrideText = null) {
+      const ta = document.getElementById('hwTextarea');
+      const text = overrideText !== null ? overrideText : ta.value.trim();
+      const photo = hwChatPhoto;
+      if (!text && !photo) return;
+
+      if (overrideText === null) { ta.value = ''; ta.style.height = 'auto'; }
+      clearHwPhoto();
+
+      state.homework.messages.push({
+        role: 'user',
+        text: text || 'Помоги разобраться с этим заданием по шагам',
+        photoPreview: photo ? photo.dataUrl : null
+      });
+      saveState();
+      renderHomeworkChat();
+
+      const typing = document.getElementById('hwTyping');
+      typing.classList.remove('hidden');
+      const scroller = document.getElementById('hwChatScroll');
+      scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
+
+      try {
+        const sub = getSubjectById(document.getElementById('hwSubjectSelect').value);
+        const sys = `Ты — дружелюбный Сократический репетитор по предмету "${sub.name}" (${state.settings.grade}, Испания).
+ПРАВИЛА:
+1. НИКОГДА не вываливай сразу полное готовое решение, если ученик сам не попросил показать конкретный шаг.
+2. Дай короткую наводку, первый шаг и задай простой встречный вопрос.
+3. Отвечай на языке ученика (обычно русский, термины можно дублировать на испанском). Используй LaTeX ($...$) для формул.
+4. Отвечай коротко и структурно.`;
+
+        const contents = state.homework.messages.slice(-10, -1).map(m => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          parts: [{ text: m.text }]
+        }));
+        const curParts = [{ text: text || 'Разбери это задание по шагам, не спойлери сразу финальный ответ.' }];
+        if (photo) curParts.push({ inlineData: { mimeType: photo.mimeType, data: photo.base64 } });
+        contents.push({ role: 'user', parts: curParts });
+
+        const reply = await callGemini({ systemInstruction: sys, contents, expectJson: false });
+        state.homework.messages.push({ role: 'ai', text: reply });
+        saveState();
+        renderHomeworkChat();
+        scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
+      } catch (err) {
+        showToast(`Ошибка: ${err.message}`, 'error');
+      } finally {
+        typing.classList.add('hidden');
+      }
+    }
+
+    async function handleHwGradePhotos(ev) {
+      const files = Array.from(ev.target.files || []);
+      if (!files.length) return;
+      hwGradePhotos = [];
+      for (const f of files) {
+        try { hwGradePhotos.push(await compressImageFile(f)); } catch (e) {}
+      }
+      document.getElementById('hwGradeFileLabel').textContent = `Загружено страниц: ${hwGradePhotos.length}`;
+      document.getElementById('hwGradePhotoThumbs').innerHTML = hwGradePhotos.map(p => `<img src="${p.dataUrl}" class="w-16 h-16 rounded-xl object-cover border border-borderSubtle" />`).join('');
+      ev.target.value = '';
+    }
+
+    async function gradeHomeworkNotebook() {
+      if (!hwGradePhotos.length) {
+        showToast('Сначала загрузи фото своей тетради!', 'warn');
+        return;
+      }
+      const btn = document.getElementById('btnGradeHomework');
+      btn.disabled = true;
+      btn.textContent = 'Проверяю тетрадь...';
+
+      try {
+        const sub = getSubjectById(document.getElementById('hwSubjectSelect').value);
+        const comment = document.getElementById('hwGradeContext').value.trim();
+        const parts = [{
+          text: `Проверь выполненную домашнюю работу по предмету "${sub.name}" (${state.settings.grade}, Испания). ${comment ? 'Комментарий: ' + comment : ''}
+Оцени по испанской шкале от 0 до 10. Верни JSON:
+{
+  "score": 8.5,
+  "verdict": "Короткий общий отзыв",
+  "items": [{"task": "Пункт / номер", "status": "ok|error", "comment": "Что верно или в чём ошибка и как исправить"}],
+  "errorCards": [{"front": "Вопрос по ошибке", "back": "Правильное правило/ответ"}]
+}`
+        }];
+        hwGradePhotos.forEach(p => parts.push({ inlineData: { mimeType: p.mimeType, data: p.base64 } }));
+
+        const res = await callGemini({ contents: [{ role: 'user', parts }], expectJson: true });
+        state.homework.gradeResult = { ...res, subjectId: sub.id };
+        saveState();
+        renderHomeworkGradeResult();
+        showToast('✅ Тетрадь проверена!', 'success');
+      } catch (err) {
+        showToast(`Ошибка проверки: ${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="check-circle-2" class="w-4 h-4"></i> Проверить мою тетрадь';
+        lucide.createIcons();
+      }
+    }
+
+    function renderHomeworkGradeResult() {
+      const wrap = document.getElementById('hwGradeResultContainer');
+      const r = state.homework.gradeResult;
+      if (!r) { wrap.innerHTML = ''; return; }
+      if (r._fallbackText) {
+        wrap.innerHTML = `<div class="bg-bgCard border border-borderSubtle rounded-2xl p-5 text-sm">${formatRichText(r._fallbackText)}</div>`;
+        renderMathIn(wrap);
+        return;
+      }
+      wrap.innerHTML = `
+        <div class="bg-bgCard border border-borderSubtle rounded-2xl p-5 space-y-4 animate-in">
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <div class="text-xs text-slate-400">Оценка (Испания 0–10)</div>
+              <div class="text-3xl font-extrabold text-emerald-400">${r.score ?? '—'} <span class="text-sm font-normal text-slate-500">/ 10</span></div>
+            </div>
+            ${(r.errorCards || []).length ? `
+              <button onclick="createCardsFromHwErrors()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white flex items-center gap-1.5 transition">
+                <i data-lucide="layers" class="w-3.5 h-3.5"></i> Создать карточки из ошибок (${r.errorCards.length})
+              </button>` : ''}
+          </div>
+          <div class="text-sm text-slate-200">${formatRichText(r.verdict || '')}</div>
+          <div class="space-y-2">
+            ${(r.items || []).map(it => `
+              <div class="p-3 rounded-xl border ${it.status === 'ok' ? 'bg-emerald-500/10 border-emerald-500/25' : 'bg-rose-500/10 border-rose-500/25'} text-xs space-y-1">
+                <div class="font-bold ${it.status === 'ok' ? 'text-emerald-300' : 'text-rose-300'}">${it.status === 'ok' ? '✅' : '❌'} ${escapeHtml(it.task)}</div>
+                <div class="text-slate-200 leading-relaxed">${formatRichText(it.comment)}</div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+      renderMathIn(wrap);
+      lucide.createIcons();
+    }
+
+    function createCardsFromHwErrors() {
+      const r = state.homework.gradeResult;
+      if (!r?.errorCards?.length) return;
+      r.errorCards.forEach(c => {
+        state.flashcards.push({ id: uid('fc'), subjectId: r.subjectId || 'mat', front: c.front, back: c.back, box: 0, nextReview: Date.now() });
+      });
+      saveState();
+      showToast(`🃏 Добавлено ${r.errorCards.length} карточек из ошибок!`, 'success');
+    }
+
+    /* ==========================================================================
+       8. SECTION 4: TOOLS (3D FLASHCARDS + EXAM SIMULATOR)
+       ========================================================================== */
+    function setToolsTab(tab) {
+      state.toolsTab = tab;
+      saveState();
+      renderToolsSection();
+    }
+
+    function renderToolsSection() {
+      populateSubjectDropdowns();
+      const isCards = state.toolsTab !== 'exam';
+      document.getElementById('toolTabCards').className = `px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 ${isCards ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'}`;
+      document.getElementById('toolTabExam').className = `px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 ${!isCards ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-200'}`;
+      document.getElementById('toolsCardsView').classList.toggle('hidden', !isCards);
+      document.getElementById('toolsExamView').classList.toggle('hidden', isCards);
+
+      if (isCards) initCardQueue();
+      lucide.createIcons();
+    }
+
+    /* ---------- 3D Flashcards (Spaced Repetition Queue) ---------- */
+    function initCardQueue() {
+      const filter = document.getElementById('cardsSubjectFilter')?.value || 'all';
+      const matching = state.flashcards.filter(c => filter === 'all' || c.subjectId === filter);
+      cardQueue = [...matching].sort((a, b) => (a.box || 0) - (b.box || 0));
+      currentCardFlipped = false;
+      renderFlashcardStage();
+    }
+
+    function renderFlashcardStage() {
+      const stage = document.getElementById('flashcardStage');
+      const counter = document.getElementById('cardsQueueCounter');
+      counter.textContent = `В очереди: ${cardQueue.length}`;
+
+      if (!cardQueue.length) {
+        stage.innerHTML = `
+          <div class="bg-bgCard border border-borderSubtle rounded-2xl p-8 text-center space-y-3">
+            <div class="text-3xl">🎉</div>
+            <div class="text-sm font-bold text-white">Очередь карточек пуста!</div>
+            <div class="text-xs text-slate-400">Создай карточки вручную или нажми «Сгенерировать из темы».</div>
+          </div>`;
+        return;
+      }
+
+      const card = cardQueue[0];
+      const sub = getSubjectById(card.subjectId);
+      stage.innerHTML = `
+        <div class="space-y-4">
+          <div class="flip-scene" onclick="flipActiveCard()">
+            <div id="activeFlipCard" class="flip-card ${currentCardFlipped ? 'is-flipped' : ''}">
+              <!-- Front -->
+              <div class="flip-face bg-bgCard border border-borderSubtle p-6 shadow-xl">
+                <div class="flex items-center justify-between text-[11px] text-slate-400">
+                  <span>${sub.icon} ${escapeHtml(sub.name)}</span>
+                  <button onclick="event.stopPropagation(); deleteFlashcard('${card.id}')" class="text-slate-500 hover:text-rose-400">Удалить</button>
+                </div>
+                <div class="my-auto py-4 text-center text-base sm:text-lg font-bold text-white leading-snug">${formatRichText(card.front)}</div>
+                <div class="text-center text-[11px] text-indigo-400">Нажми или Space, чтобы перевернуть</div>
+              </div>
+              <!-- Back -->
+              <div class="flip-face flip-back bg-bgElevated border border-indigo-500/40 p-6 shadow-xl">
+                <div class="text-[11px] text-indigo-300 font-semibold">Ответ</div>
+                <div class="my-auto py-4 text-center text-sm sm:text-base text-slate-100 leading-relaxed">${formatRichText(card.back)}</div>
+                <div class="text-center text-[11px] text-slate-400">Оцени, насколько легко вспомнил</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5">
+            <button onclick="rateCard(1)" class="py-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 text-xs font-semibold transition">❌ Не помню (1)</button>
+            <button onclick="rateCard(2)" class="py-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-semibold transition">🤔 Сложно (2)</button>
+            <button onclick="rateCard(3)" class="py-3 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-semibold transition">✅ Запомнил (3)</button>
+          </div>
+        </div>`;
+      renderMathIn(stage);
+    }
+
+    function flipActiveCard() {
+      currentCardFlipped = !currentCardFlipped;
+      const el = document.getElementById('activeFlipCard');
+      if (el) el.classList.toggle('is-flipped', currentCardFlipped);
+    }
+
+    function rateCard(rating) {
+      if (!cardQueue.length) return;
+      const card = cardQueue.shift();
+      const stored = state.flashcards.find(c => c.id === card.id);
+      if (rating === 1) {
+        if (stored) stored.box = 0;
+        cardQueue.splice(Math.min(2, cardQueue.length), 0, card);
+      } else if (rating === 2) {
+        if (stored) stored.box = 1;
+        cardQueue.push(card);
+      } else {
+        if (stored) stored.box = 2;
+      }
+      currentCardFlipped = false;
+      saveState();
+      renderFlashcardStage();
+    }
+
+    function deleteFlashcard(id) {
+      state.flashcards = state.flashcards.filter(c => c.id !== id);
+      cardQueue = cardQueue.filter(c => c.id !== id);
+      saveState();
+      renderFlashcardStage();
+    }
+
+    function openAddCardModal() {
+      const subs = getVisibleSubjects();
+      openModal('Новая 3D-карточка', `
+        <div class="space-y-3">
+          <select id="modalCardSub" class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3 py-2 text-xs text-slate-100">
+            ${subs.map(s => `<option value="${s.id}">${s.icon} ${escapeHtml(s.name)}</option>`).join('')}
+          </select>
+          <textarea id="modalCardFront" rows="2" placeholder="Вопрос / термин (поддерживает $LaTeX$)" class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3 py-2 text-xs text-slate-100"></textarea>
+          <textarea id="modalCardBack" rows="3" placeholder="Ответ / перевод / формула" class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3 py-2 text-xs text-slate-100"></textarea>
+          <button onclick="saveManualCard()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white">Сохранить карточку</button>
+        </div>`);
+    }
+
+    function saveManualCard() {
+      const subId = document.getElementById('modalCardSub').value;
+      const front = document.getElementById('modalCardFront').value.trim();
+      const back = document.getElementById('modalCardBack').value.trim();
+      if (!front || !back) return;
+      state.flashcards.unshift({ id: uid('fc'), subjectId: subId, front, back, box: 0, nextReview: Date.now() });
+      saveState();
+      closeModal();
+      initCardQueue();
+      showToast('Карточка добавлена!', 'success');
+    }
+
+    async function generateCardsFromActiveSession() {
+      const session = getActiveSession() || state.sessions[0];
+      if (!session) {
+        showToast('Сначала создай или открой тему в «Живом обучении»', 'warn');
+        return;
+      }
+      const btn = document.getElementById('btnGenCards');
+      btn.disabled = true;
+      btn.textContent = 'Генерирую...';
+      try {
+        const res = await callGemini({
+          contents: [{
+            role: 'user',
+            parts: [{
+              text: `Создай 6 сильных карточек для запоминания по теме "${session.title}" (${state.settings.grade}). Язык вопросов: ${session.examLang}, пояснений: ${session.explainLang}. Контекст: ${session.sourceNotes}. Верни JSON: {"cards": [{"front": "...", "back": "..."}]}`
+            }]
+          }],
+          expectJson: true
+        });
+        const cards = Array.isArray(res.cards) ? res.cards : [];
+        cards.forEach(c => {
+          if (c.front && c.back) {
+            state.flashcards.unshift({ id: uid('fc'), subjectId: session.subjectId, front: c.front, back: c.back, box: 0, nextReview: Date.now() });
+          }
+        });
+        saveState();
+        initCardQueue();
+        showToast(`✨ Добавлено ${cards.length} карточек!`, 'success');
+      } catch (err) {
+        showToast(`Ошибка: ${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Сгенерировать из темы';
+        lucide.createIcons();
+      }
+    }
+
+    // Keyboard shortcuts for flashcards
+    document.addEventListener('keydown', (e) => {
+      if (state.activeSection !== 'tools' || state.toolsTab !== 'cards') return;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+      if (e.code === 'Space') { e.preventDefault(); flipActiveCard(); }
+      if (e.key === '1') rateCard(1);
+      if (e.key === '2') rateCard(2);
+      if (e.key === '3') rateCard(3);
+    });
+
+    /* ---------- Exam Simulator ---------- */
+    function openExamFromCurrentSession() {
+      toggleMemoryDrawer(false);
+      state.toolsTab = 'exam';
+      switchSection('tools');
+      document.getElementById('examSourceSelect').value = 'session';
+    }
+
+    function toggleExamCustomPhotos() {
+      const val = document.getElementById('examSourceSelect').value;
+      document.getElementById('examCustomWrap').classList.toggle('hidden', val !== 'photos');
+    }
+
+    async function handleExamSourcePhotos(ev) {
+      const files = Array.from(ev.target.files || []);
+      examSourcePhotos = [];
+      for (const f of files) {
+        try { examSourcePhotos.push(await compressImageFile(f)); } catch (e) {}
+      }
+      document.getElementById('examPhotoLabel').textContent = `Загружено фото: ${examSourcePhotos.length}`;
+      ev.target.value = '';
+    }
+
+    async function startExamSimulator() {
+      const source = document.getElementById('examSourceSelect').value;
+      const subjectId = document.getElementById('examSubjectSelect').value;
+      const count = parseInt(document.getElementById('examCountSelect').value, 10);
+      const lang = document.getElementById('examLangSelect').value;
+      const mins = count === 5 ? 15 : (count === 8 ? 25 : 40);
+
+      let materialText = '';
+      let photos = [];
+      let finalSubId = subjectId;
+
+      if (source === 'session') {
+        const s = getActiveSession() || state.sessions[0];
+        if (!s) { showToast('Нет активной темы обучения — выбери Накопитель или Свои фото', 'warn'); return; }
+        finalSubId = s.subjectId;
+        materialText = `Тема: ${s.title}. ${s.sourceNotes}\nЦели: ${(s.goals || []).map(g => g.title).join(', ')}`;
+      } else if (source === 'collector') {
+        const col = getSubjectCollector(subjectId);
+        if (!col.active.length) { showToast('В Накопителе по этому предмету пусто', 'warn'); return; }
+        materialText = col.active.map(n => `${n.title}: ${n.summary}`).join('\n');
+      } else {
+        materialText = document.getElementById('examCustomTopic').value.trim();
+        photos = [...examSourcePhotos];
+        if (!materialText && !photos.length) { showToast('Прикрепи фото или напиши тему', 'warn'); return; }
+      }
+
+      const btn = document.getElementById('btnStartExam');
+      btn.disabled = true;
+      btn.textContent = 'Составляю вариант контрольной...';
+
+      try {
+        const sub = getSubjectById(finalSubId);
+        const parts = [{
+          text: `Составь реальный вариант школьной контрольной для Испании (${state.settings.grade}, предмет "${sub.name}") строго по материалу ниже.
+Количество вопросов: ${count}. Язык контрольной: ${lang === 'ES' ? 'Испанский' : 'Русский'}.
+Материал: ${materialText}
+Верни JSON: {"examTitle": "...", "questions": [{"id": 1, "prompt": "Текст задания (с LaTeX при необходимости)", "points": 2}]}`
+        }];
+        photos.forEach(p => parts.push({ inlineData: { mimeType: p.mimeType, data: p.base64 } }));
+
+        const res = await callGemini({ contents: [{ role: 'user', parts }], expectJson: true });
+        if (!Array.isArray(res.questions) || !res.questions.length) throw new Error('Не удалось сгенерировать вопросы');
+
+        activeExam = {
+          subjectId: finalSubId,
+          lang,
+          title: res.examTitle || `Контрольная: ${sub.name}`,
+          secondsLeft: mins * 60,
+          questions: res.questions.map((q, i) => ({
+            id: q.id || i + 1,
+            prompt: q.prompt,
+            points: q.points || (10 / res.questions.length).toFixed(1),
+            answerText: '',
+            answerPhoto: null
+          }))
+        };
+
+        document.getElementById('examSetupCard').classList.add('hidden');
+        document.getElementById('examResultWrap').classList.add('hidden');
+        document.getElementById('examRunnerWrap').classList.remove('hidden');
+        renderExamRunner();
+        startExamTimer();
+      } catch (err) {
+        showToast(`Ошибка: ${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="play" class="w-4 h-4"></i> Сгенерировать вариант и запустить таймер';
+        lucide.createIcons();
+      }
+    }
+
+    function startExamTimer() {
+      clearInterval(examTimerInterval);
+      examTimerInterval = setInterval(() => {
+        if (!activeExam) { clearInterval(examTimerInterval); return; }
+        activeExam.secondsLeft = Math.max(0, activeExam.secondsLeft - 1);
+        const m = String(Math.floor(activeExam.secondsLeft / 60)).padStart(2, '0');
+        const s = String(activeExam.secondsLeft % 60).padStart(2, '0');
+        const el = document.getElementById('examTimerDisplay');
+        if (el) el.textContent = `${m}:${s}`;
+        if (activeExam.secondsLeft === 0) {
+          clearInterval(examTimerInterval);
+          showToast('⏰ Время вышло! Сдавай работу на проверку.', 'warn');
+        }
+      }, 1000);
+    }
+
+    function renderExamRunner() {
+      const wrap = document.getElementById('examRunnerWrap');
+      const m = String(Math.floor(activeExam.secondsLeft / 60)).padStart(2, '0');
+      const s = String(activeExam.secondsLeft % 60).padStart(2, '0');
+
+      wrap.innerHTML = `
+        <div class="bg-bgCard border border-borderSubtle rounded-2xl p-4 flex items-center justify-between sticky top-0 z-10">
+          <div>
+            <div class="text-sm font-bold text-white">${escapeHtml(activeExam.title)}</div>
+            <div class="text-[11px] text-slate-400">Можно писать текстом или прикрепить фото решения с листка</div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="examTimerDisplay" class="font-mono text-sm font-bold px-3 py-1.5 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/30">${m}:${s}</span>
+            <button onclick="cancelExam()" class="text-xs text-slate-400 hover:text-white">Отмена</button>
+          </div>
+        </div>
+        <div class="space-y-3">
+          ${activeExam.questions.map((q, idx) => `
+            <div class="bg-bgCard border border-borderSubtle rounded-2xl p-4 space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <div class="text-sm font-semibold text-white"><span class="text-indigo-400 mr-1.5">${idx + 1}.</span>${formatRichText(q.prompt)}</div>
+                <span class="text-[10px] px-2 py-0.5 rounded bg-bgElevated text-slate-400 shrink-0">${q.points} pt</span>
+              </div>
+              <textarea rows="2" oninput="activeExam.questions[${idx}].answerText = this.value" placeholder="Твой ответ..." class="w-full bg-bgElevated border border-borderSubtle rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">${escapeHtml(q.answerText)}</textarea>
+              <div class="flex items-center gap-2">
+                <label class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bgElevated hover:bg-bgHover border border-borderSubtle text-[11px] text-slate-300 cursor-pointer">
+                  <i data-lucide="camera" class="w-3.5 h-3.5 text-indigo-400"></i> ${q.answerPhoto ? 'Фото прикреплено ✓' : 'Фото решения с листка'}
+                  <input type="file" accept="image/*" class="hidden" onchange="attachExamAnswerPhoto(${idx}, event)" />
+                </label>
+              </div>
+            </div>`).join('')}
+        </div>
+        <button id="btnSubmitExam" onclick="submitExamForGrading()" class="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition">
+          Сдать контрольную на проверку
+        </button>`;
+      renderMathIn(wrap);
+      lucide.createIcons();
+    }
+
+    async function attachExamAnswerPhoto(idx, ev) {
+      const f = ev.target.files?.[0];
+      if (!f) return;
+      activeExam.questions[idx].answerPhoto = await compressImageFile(f);
+      renderExamRunner();
+    }
+
+    function cancelExam() {
+      clearInterval(examTimerInterval);
+      activeExam = null;
+      document.getElementById('examRunnerWrap').classList.add('hidden');
+      document.getElementById('examSetupCard').classList.remove('hidden');
+    }
+
+    async function submitExamForGrading() {
+      clearInterval(examTimerInterval);
+      const btn = document.getElementById('btnSubmitExam');
+      btn.disabled = true;
+      btn.textContent = 'Проверяю работу и выставляю оценку...';
+
+      try {
+        const parts = [{
+          text: `Проверь контрольную работу (${state.settings.grade}, Испания, шкала 0–10).
+Задания и ответы ученика:
+${activeExam.questions.map((q, i) => `Вопрос ${i + 1}: ${q.prompt}\nОтвет текстом: ${q.answerText || '(нет текста)'}${q.answerPhoto ? ' [см. прикреплённое фото]' : ''}`).join('\n\n')}
+Верни JSON:
+{
+  "score": 7.5,
+  "summary": "Общий отзыв",
+  "breakdown": [{"num": 1, "ok": true, "feedback": "Пояснение"}],
+  "weakTopics": "Кратко, что именно нужно добить",
+  "errorCards": [{"front": "Вопрос по ошибке", "back": "Правильный ответ"}]
+}`
+        }];
+        activeExam.questions.forEach(q => {
+          if (q.answerPhoto) parts.push({ inlineData: { mimeType: q.answerPhoto.mimeType, data: q.answerPhoto.base64 } });
+        });
+
+        const res = await callGemini({ contents: [{ role: 'user', parts }], expectJson: true });
+        document.getElementById('examRunnerWrap').classList.add('hidden');
+        const resWrap = document.getElementById('examResultWrap');
+        resWrap.classList.remove('hidden');
+
+        window._lastExamResult = { ...res, subjectId: activeExam.subjectId, lang: activeExam.lang };
+        resWrap.innerHTML = `
+          <div class="bg-bgCard border border-borderSubtle rounded-2xl p-5 space-y-4 animate-in">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <div class="text-xs text-slate-400">Итоговая оценка</div>
+                <div class="text-3xl font-extrabold text-indigo-400">${res.score ?? '—'} <span class="text-sm font-normal text-slate-500">/ 10</span></div>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button onclick="fixExamMistakesInLive()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white">🎯 Добить ошибки в живом обучении</button>
+                ${(res.errorCards || []).length ? `<button onclick="addExamErrorCards()" class="px-3.5 py-2 rounded-xl bg-bgElevated hover:bg-bgHover border border-borderSubtle text-xs font-semibold text-slate-200">🃏 Карточки из ошибок</button>` : ''}
+                <button onclick="cancelExam(); document.getElementById('examResultWrap').classList.add('hidden');" class="px-3.5 py-2 rounded-xl bg-bgElevated text-xs text-slate-400">Новый пробник</button>
+              </div>
+            </div>
+            <div class="text-sm text-slate-200">${formatRichText(res.summary || res._fallbackText || '')}</div>
+            <div class="space-y-2">
+              ${(res.breakdown || []).map(b => `
+                <div class="p-3 rounded-xl border ${b.ok ? 'bg-emerald-500/10 border-emerald-500/25' : 'bg-rose-500/10 border-rose-500/25'} text-xs">
+                  <strong class="${b.ok ? 'text-emerald-300' : 'text-rose-300'}">${b.ok ? '✅' : '❌'} Вопрос ${b.num}:</strong>
+                  <span class="text-slate-200 ml-1">${formatRichText(b.feedback)}</span>
+                </div>`).join('')}
+            </div>
+          </div>`;
+        renderMathIn(resWrap);
+      } catch (err) {
+        showToast(`Ошибка проверки: ${err.message}`, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Сдать контрольную на проверку';
+      }
+    }
+
+    function fixExamMistakesInLive() {
+      const r = window._lastExamResult;
+      if (!r) return;
+      startLiveSession({
+        subjectId: r.subjectId,
+        daysLeft: 1,
+        explainLang: 'RU',
+        examLang: r.lang || 'ES',
+        notes: `Работа над ошибками после пробной контрольной. Слабые места: ${r.weakTopics || r.summary}`
+      });
+    }
+
+    function addExamErrorCards() {
+      const r = window._lastExamResult;
+      if (!r?.errorCards?.length) return;
+      r.errorCards.forEach(c => {
+        state.flashcards.unshift({ id: uid('fc'), subjectId: r.subjectId, front: c.front, back: c.back, box: 0, nextReview: Date.now() });
+      });
+      saveState();
+      showToast(`🃏 Добавлено ${r.errorCards.length} карточек из ошибок!`, 'success');
+    }
+
+    /* ==========================================================================
+       9. SECTION 5: SETTINGS & BACKUP
+       ========================================================================== */
+    function renderSettingsSection() {
+      populateSubjectDropdowns();
+
+      // Grade selector
+      document.getElementById('gradeButtonsGrid').innerHTML = SPANISH_GRADES.map(g => {
+        const active = state.settings.grade === g;
+        return `<button onclick="setSpanishGrade('${g}')" class="py-2.5 px-3 rounded-xl border text-xs font-semibold transition ${
+          active ? 'bg-indigo-500/20 border-indigo-500 text-indigo-200' : 'bg-bgElevated border-borderSubtle text-slate-400 hover:text-slate-200'
+        }">${g}</button>`;
+      }).join('');
+
+      // Subject toggles
+      const hidden = new Set(state.settings.hiddenSubjects || []);
+      document.getElementById('settingsSubjectsGrid').innerHTML = getAllSubjects().map(s => {
+        const visible = !hidden.has(s.id);
+        return `<button onclick="toggleSubjectVisibility('${s.id}')" class="px-3 py-1.5 rounded-xl border text-xs font-medium transition ${
+          visible ? 'bg-emerald-500/15 border-emerald-500/35 text-emerald-200' : 'bg-bgElevated border-borderSubtle text-slate-500 line-through'
+        }">${s.icon} ${escapeHtml(s.name)}</button>`;
+      }).join('');
+
+      document.getElementById('settingsApiKey').value = state.settings.apiKey || '';
+      document.getElementById('settingsModelSelect').value = state.settings.model || 'auto';
+
+      renderSettingsProfile();
+    }
+
+    function setSpanishGrade(g) {
+      state.settings.grade = g;
+      saveState();
+      renderSettingsSection();
+      showToast(`Класс обновлён: 🇪🇸 ${g}`, 'success');
+    }
+
+    function toggleSubjectVisibility(subId) {
+      const hidden = new Set(state.settings.hiddenSubjects || []);
+      if (hidden.has(subId)) hidden.delete(subId);
+      else hidden.add(subId);
+      state.settings.hiddenSubjects = [...hidden];
+      saveState();
+      renderSettingsSection();
+    }
+
+    function addCustomSubject() {
+      const inp = document.getElementById('customSubjectInput');
+      const name = inp.value.trim();
+      if (!name) return;
+      state.settings.customSubjects.push({ id: uid('sub'), name, icon: '📘' });
+      inp.value = '';
+      saveState();
+      renderSettingsSection();
+      showToast(`Предмет «${name}» добавлен!`, 'success');
+    }
+
+    function renderSettingsProfile() {
+      const subId = document.getElementById('settingsProfileSubSelect')?.value || 'mat';
+      const list = state.learnerProfiles[subId] || [];
+      const wrap = document.getElementById('settingsProfileList');
+      if (!wrap) return;
+      if (!list.length) {
+        wrap.innerHTML = `<div class="text-xs text-slate-500">Пока нет наблюдений по этому предмету.</div>`;
+        return;
+      }
+      wrap.innerHTML = list.map((note, idx) => `
+        <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-bgElevated border border-borderSubtle text-xs text-slate-200">
+          <span>${escapeHtml(note)}</span>
+          <button onclick="removeProfileNote('${subId}', ${idx})" class="text-slate-500 hover:text-rose-400">Удалить</button>
+        </div>`).join('');
+    }
+
+    function addProfileNoteFromSettings() {
+      const subId = document.getElementById('settingsProfileSubSelect').value;
+      const inp = document.getElementById('settingsProfileAddInput');
+      const val = inp.value.trim();
+      if (!val) return;
+      if (!state.learnerProfiles[subId]) state.learnerProfiles[subId] = [];
+      state.learnerProfiles[subId].push(val);
+      inp.value = '';
+      saveState();
+      renderSettingsProfile();
+    }
+
+    function saveApiSettings() {
+      state.settings.apiKey = document.getElementById('settingsApiKey').value.trim();
+      state.settings.model = document.getElementById('settingsModelSelect').value;
+      saveState();
+      showToast('Настройки API сохранены!', 'success');
+    }
+
+    function exportBackup() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `astrastudy-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Бэкап скачан!', 'success');
+    }
+
+    function importBackup(ev) {
+      const file = ev.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          state = { ...getDefaultState(), ...parsed };
+          saveState();
+          switchSection(state.activeSection || 'learn');
+          showToast('Бэкап успешно восстановлен!', 'success');
+        } catch (err) {
+          showToast('Некорректный JSON-файл', 'error');
+        }
+      };
+      reader.readAsText(file);
+      ev.target.value = '';
+    }
+
+    function confirmClearAllData() {
+      openModal('Сбросить все данные?', `
+        <p class="text-xs text-slate-300">Все сохранённые сессии, накопитель, архив и карточки будут удалены из этого браузера.</p>
+        <div class="flex justify-end gap-2 pt-2">
+          <button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-bgElevated text-xs text-slate-300">Отмена</button>
+          <button onclick="localStorage.removeItem(STORAGE_KEY); state = getDefaultState(); closeModal(); switchSection('learn'); showToast('Данные сброшены', 'info');" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white">Да, сбросить</button>
+        </div>`);
+    }
+
+    /* ==========================================================================
+       10. BOOTSTRAP
+       ========================================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      updateBadges();
+      populateSubjectDropdowns();
+      switchSection(state.activeSection || 'learn');
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
